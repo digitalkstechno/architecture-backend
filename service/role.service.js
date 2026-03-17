@@ -8,7 +8,7 @@ export const createRole = async(
 }
 
 export const getRole = async(tenantId) => {
-    return await Role.find({tenantId}).populate('permission')
+    return await Role.find({tenantId}).populate('permissions')
     ;
 }
 

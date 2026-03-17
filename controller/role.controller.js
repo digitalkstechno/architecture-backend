@@ -9,7 +9,12 @@ import {
 export const createRoleController = async (req, res) => {
   try {
     const tenantId = req.user.tenantId;
-    const roles = await createRole(tenantId, req.body);
+
+    const roles = await createRole({
+      data: req.body,
+      tenantId
+    });
+
     return res.status(201).json(roles);
   } catch (error) {
     console.log("🚀 ~ createRoleController ~ error:", error);

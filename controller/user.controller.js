@@ -9,8 +9,10 @@ import {
 
 export const CreateUserController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId
-    const users = await createUser(tenantId,req.body);
+    const tenantId = req.user.tenantId._id;
+
+    const users = await createUser(req.body, tenantId);
+
     return res.status(201).json(users);
   } catch (error) { 
     return res.status(500).json({ error: error.message });

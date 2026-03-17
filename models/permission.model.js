@@ -6,7 +6,9 @@ const permissionScehma = new mongoose.Schema({
     ref: "Tenant",
     // required: true,
   },
-
+  permissionName : {
+    type: String
+  },
   module: {
     type: String,
     require: true,

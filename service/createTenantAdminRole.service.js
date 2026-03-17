@@ -5,7 +5,7 @@ export const createTenantAdminRole = async (tenantId) => {
   const permissions = await Permission.insertMany([
     { module: "USER", actions: ["READ","CREATE"] },
     { module: "ROLE", actions: ["READ","CREATE"] },
-    { module: "PERMISSION", actions: ["READ"] },
+    { module: "PERMISSION", actions: ["READ","CREATE"] },
     { module: "PROJECT", actions: ["READ", "CREATE"] },
     { module: "PAYMENT_LEDGER", actions: ["READ","CREATE"] },
     { module: "PROJET_TASK", actions: ["READ","CREATE"] },
