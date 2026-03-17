@@ -55,7 +55,7 @@ export const createTenantAdminUser = async ({
 
   const user = await User.create({
     tenantId,
-    userName: generateUsername(tenantName),
+    userName: await generateUsername(tenantName),
     email,
     password: hashedPassword,
     role: roleId,
