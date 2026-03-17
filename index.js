@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import path from "path";
 import connectDB from "./connection/connection.js";
-// import index from "./routes/index.routes.js";
+import index from "./routes/index.route.js";
 
 dotenv.config();
 
@@ -32,7 +32,7 @@ app.use(
 connectDB();
 
 // ROUTES – all API routes start with /sp
-// app.use("/architecture", index);
+app.use("/architecture", index);
 
 // SERVER
 const PORT = process.env.PORT || 9000;

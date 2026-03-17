@@ -1,0 +1,35 @@
+
+// routes/index.routes.js
+import express from "express";
+
+const router = express.Router();
+
+// ------------------ Authentication Routes Import ------------------------------------
+import permissionRouter from "./permission.routes.js";
+import roleRouter from "./role.routes.js";
+import userRouter from "./user.route.js";
+import tenantRouter from "./tenant.routes.js";
+import subscriptionPlanRoutes from "./subscriptionplan.routes.js";
+import { LoginUser } from "../controller/auth.controller.js";
+
+// ------------------ Modules & Sections Routes Import ---------------------------------
+import paymentledgerRouter from "./paymentledger.routes.js";
+import bankbriefRouter from "./bankbrief.routes.js"
+
+// ------------------ Authentication Routes Used ------------------------------------
+router.use("/permission", permissionRouter);
+router.use("/role", roleRouter);
+router.use("/user", userRouter);
+router.use("/tenant", tenantRouter);
+router.use("/subscription-plans", subscriptionPlanRoutes);
+router.use("/login", LoginUser);
+
+// ------------------ Modules & Sections Routes Used ---------------------------------
+router.use("/paymentledger", paymentledgerRouter);
+router.use("/bankbrief", bankbriefRouter);
+
+
+
+export default router;
+
+

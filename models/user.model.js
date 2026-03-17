@@ -1,16 +1,7 @@
 
 import mongoose from "mongoose";
 
-// const deviceSchema = new mongoose.Schema({
-//   deviceId: String,
-//   deviceName: String,
-//   browser: String,
-//   os: String,
-//   deviceType: String,
-//   userAgent: String,
-//   token: String,
-//   lastLogin: Date,
-// });
+
 
 const userschema = new mongoose.Schema({
   tenantId: {
@@ -30,10 +21,6 @@ const userschema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Role",
   },
-//   devices: {
-//     type: [deviceSchema],
-//     default: [],
-//   },
   email: {
     type: String,
     unique: true,
