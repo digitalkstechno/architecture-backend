@@ -15,9 +15,10 @@ import { LoginUser } from "../controller/auth.controller.js";
 // ------------------ Modules & Sections Routes Import ---------------------------------
 import paymentledgerRouter from "./paymentledger.routes.js";
 import bankbriefRouter from "./bankbrief.routes.js";
-import clientRouter from "./client.routes.js"
-import projectRouter from "./project.routes.js"
-import projectstageRouter from "./projectstage.routes.js"
+import clientRouter from "./client.routes.js";
+import projectRouter from "./project.routes.js";
+import projectstageRouter from "./projectstage.routes.js";
+import taskRouter from "./task.routes.js";
 
 // ------------------ Authentication Routes Used ------------------------------------
 router.use("/permission", permissionRouter);
@@ -33,6 +34,7 @@ router.use("/bankbrief", bankbriefRouter);
 router.use("/client", clientRouter);
 router.use("/project", projectRouter);
 router.use("/projectstage", projectstageRouter);
+router.use("/task", taskRouter);
 
 
 
