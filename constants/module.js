@@ -1,5 +1,5 @@
 export const MODULES = {
-  //  authentication Modules
+  //  authentication Modules & Sass Modules
   USER: "USER",
   ROLE: "ROLE",
   PERMISSION: "PERMISSION",
@@ -9,5 +9,12 @@ export const MODULES = {
   PAYMENT_LEDGER : "PAYMENT_LEDGER",
   PROJET_TASK : "PROJET_TASK",
   BANK_BRIEF : "BANK_BRIEF",
+
+
+  // Project Moduels
+
+  CLIENT : "CLIENT",
+  PROJECT : "PROJECT",
+  PROJECT_STAGE : "PROJECT_STAGE",
 
 };
