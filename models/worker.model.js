@@ -1,20 +1,30 @@
-const workerSchema = new mongoose.Schema({
+import mongoose from "mongoose";
 
-  tenantId: { type: mongoose.Schema.Types.ObjectId, ref: "Tenant" },
+const workerSchema = new mongoose.Schema(
+  {
+    tenantId: { type: mongoose.Schema.Types.ObjectId, ref: "Tenant" },
 
-  name: String,
+    name: String,
 
-  phone: String,
+    phone: String,
 
-  skill: String,
+    skill: String,
 
-  experienceYears: Number,
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
 
-  wageType: {
-    type: String,
-    enum: ["DAILY","CONTRACT"]
+    experienceYears: Number,
+
+    wageType: {
+      type: String,
+      enum: ["DAILY", "CONTRACT"],
+    },
+
+    dailyWage: Number,
   },
+  { timestamps: true },
+);
 
-  dailyWage: Number
-
-}, { timestamps: true });
+export default mongoose.model("Worker", workerSchema);

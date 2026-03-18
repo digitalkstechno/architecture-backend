@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 const attendanceSchema = new mongoose.Schema({
 
   tenantId: { type: mongoose.Schema.Types.ObjectId, ref: "Tenant" },
@@ -19,3 +21,7 @@ const attendanceSchema = new mongoose.Schema({
   }
 
 });
+
+
+
+export default mongoose.model("Attendence", attendanceSchema);

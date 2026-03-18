@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 const projectUpdateSchema = new mongoose.Schema({
 
   tenantId: { type: mongoose.Schema.Types.ObjectId, ref: "Tenant" },
@@ -16,3 +18,6 @@ const projectUpdateSchema = new mongoose.Schema({
   }
 
 }, { timestamps: true });
+
+
+export default mongoose.model("Projectupdate", projectUpdateSchema);

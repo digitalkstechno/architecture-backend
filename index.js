@@ -26,7 +26,7 @@ app.use(
 
 // // static
 // app.use("/upload", express.static("upload"));
-// app.use("/upload", express.static(path.join(process.cwd(), "upload")));
+app.use("/upload", express.static(path.join(process.cwd(), "upload")));
 
 // DB
 connectDB();

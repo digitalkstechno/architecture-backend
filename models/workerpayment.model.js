@@ -1,3 +1,8 @@
+import mongoose from "mongoose";
+
+
+
+
 const workerPaymentSchema = new mongoose.Schema({
 
   tenantId: { type: mongoose.Schema.Types.ObjectId, ref: "Tenant" },
@@ -13,3 +18,6 @@ const workerPaymentSchema = new mongoose.Schema({
   paymentMethod: String
 
 });
+
+
+export default mongoose.model("Workerpayment", workerPaymentSchema);

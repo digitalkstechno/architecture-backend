@@ -1,18 +1,24 @@
-const quotationSchema = new mongoose.Schema({
+  import mongoose from "mongoose";
 
-  tenantId: { type: mongoose.Schema.Types.ObjectId, ref: "Tenant" },
 
-  clientId: { type: mongoose.Schema.Types.ObjectId, ref: "Client" },
+  const quotationSchema = new mongoose.Schema({
 
-  projectId: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },
+    tenantId: { type: mongoose.Schema.Types.ObjectId, ref: "Tenant" },
 
-  totalAmount: Number,
+    clientId: { type: mongoose.Schema.Types.ObjectId, ref: "Client" },
 
-  description: String,
+    projectId: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },
 
-  status: {
-    type: String,
-    enum: ["DRAFT","SENT","APPROVED","REJECTED"]
-  }
+    totalAmount: Number,
 
-});
+    description: String,
+
+    status: {
+      type: String,
+      enum: ["DRAFT","SENT","APPROVED","REJECTED"]
+    }
+
+  });
+
+
+  export default mongoose.model("Projectestimation", quotationSchema);

@@ -18,7 +18,13 @@ import bankbriefRouter from "./bankbrief.routes.js";
 import clientRouter from "./client.routes.js";
 import projectRouter from "./project.routes.js";
 import projectstageRouter from "./projectstage.routes.js";
+import projectestimationRouter from "./estimation.routes.js";
+import projectupdatesRouter from "./projectupdate.routes.js";
 import taskRouter from "./task.routes.js";
+import workerRouter from "./worker.routes.js";
+import workertaskRouter from "./workertask.routes.js";
+import attendenceRouter from "./attendence.routes.js";
+import workerpaymentRouter from "./workerpayment.routes.js";
 
 // ------------------ Authentication Routes Used ------------------------------------
 router.use("/permission", permissionRouter);
@@ -34,7 +40,13 @@ router.use("/bankbrief", bankbriefRouter);
 router.use("/client", clientRouter);
 router.use("/project", projectRouter);
 router.use("/projectstage", projectstageRouter);
+router.use("/projectestimation", projectestimationRouter);
+router.use("/projectupdates", projectupdatesRouter);
 router.use("/task", taskRouter);
+router.use("/worker", workerRouter);
+router.use("/workertask", workertaskRouter);
+router.use("/attendence", attendenceRouter);
+router.use("/workerpayment", workerpaymentRouter);
 
 
 
