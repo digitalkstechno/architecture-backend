@@ -80,3 +80,4 @@ export const createTenantAdminUser = async ({
 
   return { user, plainPassword };
 };
+

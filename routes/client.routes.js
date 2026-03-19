@@ -8,16 +8,17 @@ import { ACTIONS } from "../constants/permission.js";
 import { updateClient } from "../service/client.service.js";
 import { queryOptions } from "../constants/globalpagination.js";
 import Client from "../models/client.model.js";
+import { CreateClientController } from "../controller/createClient.controller.js";
 
 router.use(protect);
 //  checkPermission(MODULES.CLIENT, ACTIONS.CREATE),
 //  
-router.post("/",creatClientController);
+router.post("/",CreateClientController);
 router.get("/",  queryOptions(Client),  getClientController);
 router.get("/:id", getClientByIdController);
 router.put("/:id",  updateClientController);
 router.delete("/:id",  deleteClientController);
-// router.post("/", checkPermission(MODULES.CLIENT, ACTIONS.CREATE),creatClientController);
+// router.post("/", checkPermission(MODULES.CLIENT, ACTIONS.CREATE),CreateClientController);
 // router.get("/",checkPermission(MODULES.CLIENT, ACTIONS.READ),queryOptions(Client),  getClientController);
 // router.get("/:id", checkPermission(MODULES.CLIENT, ACTIONS.READ), getClientByIdController);
 // router.put("/:id", checkPermission(MODULES.CLIENT, ACTIONS.UPDATE), updateClientController);

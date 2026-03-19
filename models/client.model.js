@@ -12,9 +12,12 @@ const clientSchema = new mongoose.Schema({
   phone: String,
   email: String,
   address: String,
-
-  notes: String
-
+  notes: String,
+  password: String,
+    role: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Role",
+    },
 }, { timestamps: true });
 
 export default mongoose.model("Client", clientSchema);

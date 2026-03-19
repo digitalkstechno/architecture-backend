@@ -1,54 +1,68 @@
-import User from "./../models/user.model.js";
-import { comparePassword } from "./../utils/password.js";
-import { generateJsonWebToken } from "./../utils/jwt.js";
-import Tenant from "./../models/tenant.model.js";
+import User from "../models/user.model.js";
+import Client from "../models/client.model.js";
+import bcrypt from "bcryptjs";
+import Tenant from "../models/tenant.model.js";
+import { generateJsonWebToken } from "../utils/jwt.js";
 
-export const Login = async ({ userName, password }) => {
-  const user = await User.findOne({ userName })
+export const Login = async ({ email, password }) => {
+
+  console.log("📥 Incoming Login:", { email, password });
+
+  // 1️⃣ Try finding in User
+  let user = await User.findOne({ email })
     .populate({
       path: "role",
       populate: { path: "permissions" },
     })
-    .populate("tenantId")
+    .populate("tenantId");
 
-  if (!user) throw new Error("User not found");
+  console.log("👤 User from User collection:", user);
 
-  // now populate subscription.planId on Tenant
-  await user.populate({
-    path: "tenantId",
-    populate: {
-      path: "subscription.planId",
-      model: "SubscriptionPlan",
-    },
-  });
+  // 2️⃣ If not found → check Client
+  if (!user) {
+    user = await Client.findOne({ email })
+      .populate({
+        path: "role",
+        populate: { path: "permissions" },
+      })
+      .populate("tenantId");
 
-  const match = await comparePassword(password, user.password);
-  if (!match) throw new Error("Invalid credentials");
+    console.log("👤 User from Client collection:", user);
+  }
 
-  /* ---------------- SUPER ADMIN BYPASS ---------------- */
+  // ❌ User not found
+  if (!user) {
+    console.log("❌ No user found with this email");
+    throw new Error("User not found");
+  }
+
+  // 3️⃣ Password check
+  console.log("🔑 Entered Password:", password);
+  console.log("🔒 Stored Password:", user.password);
+
+  const match = await bcrypt.compare(password, user.password);
+
+  console.log("✅ Password Match:", match);
+
+  if (!match) {
+    console.log("❌ Password mismatch");
+    throw new Error("Invalid credentials");
+  }
+
+  /* ---------------- TENANT CHECK ---------------- */
   if (!user.isSuperAdmin) {
     if (!user.tenantId) {
+      console.log("❌ Tenant missing");
       throw new Error("Tenant not assigned");
     }
 
-    // Yahan tenantId ObjectId hi hai, populate bhi hua
     const tenant = await Tenant.findById(user.tenantId);
-    console.log("full tenant data",user.tenantId)
-    console.log("Login tenant:", {
-      id: tenant?._id,
-      isActive: tenant?.isActive,
-      status: tenant?.subscription?.status,
-    });
 
-    if (!tenant) {
-      throw new Error("Tenant not found");
-    }
+    console.log("🏢 Tenant:", tenant);
 
-    if (!tenant.isActive) {
-      throw new Error("Tenant is disabled");
-    }
+    if (!tenant) throw new Error("Tenant not found");
+    if (!tenant.isActive) throw new Error("Tenant is disabled");
 
-    // Yahan TRIAL + ACTIVE dono allow karo
     if (
       tenant.subscription?.status !== "TRIAL" &&
       tenant.subscription?.status !== "ACTIVE"
@@ -57,27 +71,22 @@ export const Login = async ({ userName, password }) => {
     }
   }
 
-  /* ---------------- DEVICE MANAGEMENT ---------------- */
+  // 4️⃣ Generate token
   const token = generateJsonWebToken(user);
 
-
-
- 
-
-  await user.save();
+  console.log("🎉 Login Success");
 
   return {
     token,
     user: {
       _id: user._id,
-      userName: user.userName,
-      isSuperAdmin: user.isSuperAdmin,
+      name: user.userName || user.clientName,
+      email: user.email,
       tenantId: user.tenantId,
       role: user.role,
     },
   };
 };
-
 
 export const Logout = async ({ userId }) => {
   const user = await User.findById(userId);
