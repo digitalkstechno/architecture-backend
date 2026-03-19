@@ -4,12 +4,13 @@ import { GetTenantByIdController, GetTenantController, UpdateTenantController, D
 import { CreateTenantController } from "../controller/createtenant.controller.js";
 import { activateTenant, cancelTenant } from "../service/subscription.service.js";
 import { protect } from '../middleware/auth.middleware.js';
-
+import { queryOptions } from "../constants/globalpagination.js";
+import Tenant from "./../models/tenant.model.js"
 
 router.use(protect);
 
 router.post("/", CreateTenantController);
-router.get("/", GetTenantController);
+router.get("/",  GetTenantController);
 router.get("/:id", GetTenantByIdController);
 router.put("/:id",UpdateTenantController);
 router.delete("/:id", DeleteTenantController);

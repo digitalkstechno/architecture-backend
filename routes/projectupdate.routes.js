@@ -6,6 +6,8 @@ import { ACTIONS } from "../constants/permission.js";
 import { protect } from "../middleware/auth.middleware.js";
 import { checkPermission } from "../middleware/permission.middleware.js";
 import { upload } from "../middleware/upload.middleware.js";
+import { queryOptions } from "../constants/globalpagination.js";
+import Projectupdate from "../models/projectupdate.model.js";
 router.use(protect);
 
 router.post(
@@ -13,14 +15,14 @@ router.post(
   upload.array("images", 10), // max 10 images
   createProjectupdateController
 );
-router.get("/", getProjectupdateController);
+router.get("/",queryOptions(Projectupdate), getProjectupdateController);
 router.get("/:id", getProjectupdateByIdController);
 router.put("/:id",upload.array("images", 10), updateProjectupdateController);
 router.delete("/:id", deleteProjectupdateController);
 
 
 // router.post("/", checkPermission(MODULES.PROJECT, ACTIONS.CREATE), createProjectupdateController);
-// router.post("/",checkPermission(MODULES.PROJECT, ACTIONS.READ), getProjectupdateController);
+// router.post("/",checkPermission(MODULES.PROJECT, ACTIONS.READ),queryOptions(Projectupdate), getProjectupdateController);
 // router.post("/:id",checkPermission(MODULES.PROJECT, ACTIONS.READ), getProjectupdateByIdController);
 // router.post("/:id",checkPermission(MODULES.PROJECT, ACTIONS.UPDATE), updateProjectupdateController);
 // router.post("/:id",checkPermission(MODULES.PROJECT, ACTIONS.DELETE), deleteProjectupdateController);

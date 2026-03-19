@@ -1,31 +1,55 @@
 import Client from "../models/client.model.js";
 
-
-export const createClient = async(data, tenantId) =>{
-
-    return await Client.create({...data, tenantId});
+export const createClient = async (data, tenantId) => {
+  return await Client.create({ ...data, tenantId });
 };
-export const getClient = async(tenantId) =>{
+export const getClient = async (queryParams, tenantId) => {
+  let filter = {
+    tenantId: tenantId, // ✅ IMPORTANT
+  };
 
-    return await Client.find({tenantId: tenantId });
-    // .populate("tenantId")
+  if (queryParams.clientName) {
+    filter.clientName = {
+      $regex: queryParams.clientName,
+      $options: "i",
+    };
+  }
+  if (queryParams.phone) {
+    filter.phone = {
+      $regex: queryParams.phone,
+      $options: "i",
+    };
+  }
+  if (queryParams.email) {
+    filter.email = {
+      $regex: queryParams.email,
+      $options: "i",
+    };
+  }
+  if (queryParams.address) {
+    filter.address = {
+      $regex: queryParams.address,
+      $options: "i",
+    };
+  }
+
+  const clients = await Client.find(filter).sort({ createdAt: -1 }).lean();
+
+  return clients;
 };
 export const getClientbyId = async (id, tenantId) => {
   return await Client.findOne({
     _id: id,
-    tenantId: tenantId
+    tenantId: tenantId,
   });
 
-//   .populate("tenantId")
+  //   .populate("tenantId")
 };
 export const updateClient = async (id, data, tenantId) => {
-  return await Client.findOneAndUpdate(
-    { _id: id, tenantId: tenantId },
-    data,
-    { new: true }
-  );
+  return await Client.findOneAndUpdate({ _id: id, tenantId: tenantId }, data, {
+    new: true,
+  });
 };
-export const deleteClient = async(id, tenantId) =>{
-
-    return await Client.findByIdAndDelete({_id :id,tenantId: tenantId});
+export const deleteClient = async (id, tenantId) => {
+  return await Client.findByIdAndDelete({ _id: id, tenantId: tenantId });
 };

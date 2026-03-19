@@ -1,5 +1,11 @@
-import { createWorker, getWorker, getWorkerById, updateWorker, deleteWorker } from "../service/worker.service.js";
-
+import Worker from "../models/worker.model.js";
+import {
+  createWorker,
+  getWorker,
+  getWorkerById,
+  updateWorker,
+  deleteWorker,
+} from "../service/worker.service.js";
 
 export const createWorkerController = async (req, res) => {
   try {
@@ -14,8 +20,22 @@ export const createWorkerController = async (req, res) => {
 export const getWorkerController = async (req, res) => {
   try {
     const tenantId = req.user.tenantId;
-    const Workers = await getWorker( tenantId);
-    return res.status(200).json(Workers);
+    const Workers = await getWorker(req.query, tenantId);
+    const total = await Worker.countDocuments({
+      tenantId: tenantId, // ✅ FIX
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Workers retrieved successfully",
+      Workers,
+      pagination: {
+        page: parseInt(req.query.page) || 1,
+        limit: parseInt(req.query.limit) || 10,
+        total,
+        pages: Math.ceil(total / (parseInt(req.query.limit) || 10)),
+      },
+    });
   } catch (error) {
     console.log("🚀 ~ getWorkerController ~ error:", error);
     return res.status(500).json({ error: error.message });
@@ -36,11 +56,7 @@ export const updateWorkerController = async (req, res) => {
   try {
     const tenantId = req.user.tenantId;
 
-    const Worker = await updateWorker(
-      req.params.id,
-      req.body,
-      tenantId
-    );
+    const Worker = await updateWorker(req.params.id, req.body, tenantId);
 
     return res.status(200).json(Worker);
   } catch (error) {
@@ -51,7 +67,7 @@ export const updateWorkerController = async (req, res) => {
 export const deleteWorkerController = async (req, res) => {
   try {
     const tenantId = req.user.tenantId;
-    const Workers = await deleteWorker(req.params.id , tenantId);
+    const Workers = await deleteWorker(req.params.id, tenantId);
     return res.status(204).json(Workers);
   } catch (error) {
     console.log("🚀 ~ deleteWorkerController ~ error:", error);

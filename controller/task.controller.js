@@ -1,3 +1,4 @@
+import Task from "../models/task.model.js";
 import {
   createTask,
   getTask,
@@ -21,8 +22,22 @@ export const createTaskController = async (req, res) => {
 export const getTaskController = async (req, res) => {
   try {
     const tenantId = req.user.tenantId;
-    const Tasks = await getTask( tenantId);
-    return res.status(200).json(Tasks);
+    const Tasks = await getTask(req.query, tenantId);
+    const total = await Task.countDocuments({
+                          tenantId: tenantId, // ✅ FIX
+                        });
+
+    return res.status(200).json({
+      success: true,
+      message: "Tasks retrieved successfully",
+      Tasks,
+      pagination: {
+        page: parseInt(req.query.page) || 1,
+        limit: parseInt(req.query.limit) || 10,
+        total,
+        pages: Math.ceil(total / (parseInt(req.query.limit) || 10)),
+      },
+    });
   } catch (error) {
     console.log("🚀 ~ getTaskController ~ error:", error);
     return res.status(500).json({ error: error.message });

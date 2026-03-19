@@ -1,3 +1,4 @@
+import Projectupdate from "../models/projectupdate.model.js";
 import { createProjectupdate, deleteProjectupdate, getProjectupdate,getProjectupdateById, updateProjectupdate } from "../service/projectupdate.service.js";
 
 
@@ -26,8 +27,21 @@ export const createProjectupdateController = async (req, res) => {
 export const getProjectupdateController = async (req, res) => {
   try {
     const tenantId = req.user.tenantId;
-    const Projectupdates = await getProjectupdate( tenantId);
-    return res.status(200).json(Projectupdates);
+    const Projectupdates = await getProjectupdate(req.query, tenantId);
+     const total = await Projectupdate.countDocuments({
+                      tenantId: tenantId, // ✅ FIX
+                    });
+    return res.status(200).json({
+      success: true,
+      message: "Projectupdates retrieved successfully",
+      Projectupdates,
+      pagination: {
+        page: parseInt(req.query.page) || 1,
+        limit: parseInt(req.query.limit) || 10,
+        total,
+        pages: Math.ceil(total / (parseInt(req.query.limit) || 10)),
+      },
+    });
   } catch (error) {
     console.log("🚀 ~ getProjectupdateController ~ error:", error);
     return res.status(500).json({ error: error.message });

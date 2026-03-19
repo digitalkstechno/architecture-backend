@@ -1,3 +1,4 @@
+import Workerpayment from "../models/workerpayment.model.js";
 import { createWorkerpayment, getWorkerpayment, getWorkerpaymentById, updateWorkerpayment, deleteWorkerpayment } from "../service/workerpayment.service.js";
 
 
@@ -14,8 +15,22 @@ export const createWorkerpaymentController = async (req, res) => {
 export const getWorkerpaymentController = async (req, res) => {
   try {
     const tenantId = req.user.tenantId;
-    const Workerpayments = await getWorkerpayment( tenantId);
-    return res.status(200).json(Workerpayments);
+    const Workerpayments = await getWorkerpayment(req.query, tenantId);
+     const total = await Workerpayment.countDocuments({
+              tenantId: tenantId, // ✅ FIX
+            });
+        
+            return res.status(200).json({
+              success: true,
+              message: "Workerpayments retrieved successfully",
+              Workerpayments,
+              pagination: {
+                page: parseInt(req.query.page) || 1,
+                limit: parseInt(req.query.limit) || 10,
+                total,
+                pages: Math.ceil(total / (parseInt(req.query.limit) || 10)),
+              },
+            });
   } catch (error) {
     console.log("🚀 ~ getWorkerpaymentController ~ error:", error);
     return res.status(500).json({ error: error.message });

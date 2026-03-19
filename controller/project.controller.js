@@ -1,3 +1,4 @@
+import Project from "../models/project.model.js";
 import {
   createProject,
   getProject,
@@ -19,8 +20,22 @@ export const createProjectController = async (req, res) => {
 export const getProjectController = async (req, res) => {
   try {
     const tenantId = req.user.tenantId;
-    const projects = await getProject( tenantId);
-    return res.status(200).json(projects);
+    const projects = await getProject(req.query, tenantId);
+     const total = await Project.countDocuments({
+          tenantId: tenantId, // ✅ FIX
+        });
+
+    return res.status(200).json({
+      success: true,
+      message: "Projects retrieved successfully",
+      projects,
+      pagination: {
+        page: parseInt(req.query.page) || 1,
+        limit: parseInt(req.query.limit) || 10,
+        total,
+        pages: Math.ceil(total / (parseInt(req.query.limit) || 10)),
+      },
+    });
   } catch (error) {
     console.log("🚀 ~ getProjectController ~ error:", error);
     return res.status(500).json({ error: error.message });

@@ -1,3 +1,4 @@
+import Workertask from "../models/workertask.model.js";
 import { createWorkertask, getWorkertask, getWorkertaskById, updateWorkertask , deleteWorkertask } from "../service/workertask.service.js";
 
 
@@ -14,8 +15,22 @@ export const createWorkertaskController = async (req, res) => {
 export const getWorkertaskController = async (req, res) => {
   try {
     const tenantId = req.user.tenantId;
-    const Workertasks = await getWorkertask( tenantId);
-    return res.status(200).json(Workertasks);
+    const Workertasks = await getWorkertask(req.query, tenantId);
+        const total = await Workertask.countDocuments({
+          tenantId: tenantId, // ✅ FIX
+        });
+    
+        return res.status(200).json({
+          success: true,
+          message: "Workertasks retrieved successfully",
+          Workertasks,
+          pagination: {
+            page: parseInt(req.query.page) || 1,
+            limit: parseInt(req.query.limit) || 10,
+            total,
+            pages: Math.ceil(total / (parseInt(req.query.limit) || 10)),
+          },
+        });
   } catch (error) {
     console.log("🚀 ~ getWorkertaskController ~ error:", error);
     return res.status(500).json({ error: error.message });

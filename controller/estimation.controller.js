@@ -1,3 +1,4 @@
+import Projectestimation from "../models/estimation.model.js";
 import { createProjectestimation,getProjectestimation, getProjectestimationById, updateProjectestimation, deleteProjectestimation } from "../service/estimation.service.js";
 
 
@@ -14,8 +15,23 @@ export const createProjectestimationController = async (req, res) => {
 export const getProjectestimationController = async (req, res) => {
   try {
     const tenantId = req.user.tenantId;
-    const Projectestimations = await getProjectestimation( tenantId);
-    return res.status(200).json(Projectestimations);
+    const Projectestimations = await getProjectestimation(req.query, tenantId);
+     const total = await Projectestimation.countDocuments({
+              tenantId: tenantId, // ✅ FIX
+            });
+
+    return res.status(200).json({
+      success: true,
+      message: "Projectestimation retrieved successfully",
+      Projectestimations,
+      pagination: {
+        page: parseInt(req.query.page) || 1,
+        limit: parseInt(req.query.limit) || 10,
+        total,
+        pages: Math.ceil(total / (parseInt(req.query.limit) || 10)),
+      },
+    });
+
   } catch (error) {
     console.log("🚀 ~ getProjectestimationController ~ error:", error);
     return res.status(500).json({ error: error.message });

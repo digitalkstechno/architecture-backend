@@ -1,3 +1,4 @@
+import Permission from "../models/permission.model.js";
 import {
   getPermission,
   getPermissionByid,
@@ -21,8 +22,21 @@ export const createPermissionController = async (req, res) => {
 export const getPermissionController = async (req, res) => {
   try {
     const tenantId = req.user.tenantId;
-    const permissions = await getPermission(tenantId);
-    return res.status(200).json(permissions);
+    const permissions = await getPermission(req.query,tenantId);
+    const total = await Permission.countDocuments({
+              tenantId: tenantId, // ✅ FIX
+            });
+    return res.status(200).json({
+      success: true,
+      message: "Permissions retrieved successfully",
+      permissions,
+      pagination: {
+        page: parseInt(req.query.page) || 1,
+        limit: parseInt(req.query.limit) || 10,
+        total,
+        pages: Math.ceil(total / (parseInt(req.query.limit) || 10)),
+      },
+    });
   } catch (error) {
     return res.staus(500).json({ error: message.error });
   }

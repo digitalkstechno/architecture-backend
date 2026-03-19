@@ -1,3 +1,4 @@
+import Projectstage from "../models/projectstage.model.js";
 import { createProjectStage, getProjectStage, getProjectStageById, updateProjectStage, deleteProjectStage } from "../service/projectstage.service.js";
 
 
@@ -15,8 +16,22 @@ export const createProjectstageController = async (req, res) => {
 export const getProjectstageController = async (req, res) => {
   try {
     const tenantId = req.user.tenantId;
-    const projectstage = await getProjectStage( tenantId);
-    return res.status(200).json(projectstage);
+    const projectstage = await getProjectStage(req.query, tenantId);
+    const total = await Projectstage.countDocuments({
+                  tenantId: tenantId, // ✅ FIX
+                });
+
+    return res.status(200).json({
+      success: true,
+      message: "Projectstage retrieved successfully",
+      projectstage,
+      pagination: {
+        page: parseInt(req.query.page) || 1,
+        limit: parseInt(req.query.limit) || 10,
+        total,
+        pages: Math.ceil(total / (parseInt(req.query.limit) || 10)),
+      },
+    });
   } catch (error) {
     console.log("🚀 ~ getProjectstageController ~ error:", error);
     return res.status(500).json({ error: error.message });

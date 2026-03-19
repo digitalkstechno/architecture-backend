@@ -1,3 +1,4 @@
+import User from "../models/user.model.js";
 import {
   createUser,
   getUser,
@@ -19,12 +20,30 @@ export const CreateUserController = async (req, res) => {
   }
 };
 
+
+ 
+
 export const GetUserController = async (req, res) => {
   try {
     const tenantId = req.user.tenantId;
-    // console.log("🚀 ~ GetUserController ~ tenantId:", tenantId)
-    const users = await getUser(tenantId);
-    return res.status(200).json(users);
+
+    const users = await getUser(req.query, tenantId);
+
+    const total = await User.countDocuments({
+      tenantId: tenantId, // ✅ FIX
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "User retrieved successfully",
+      users,
+      pagination: {
+        page: parseInt(req.query.page) || 1,
+        limit: parseInt(req.query.limit) || 10,
+        total,
+        pages: Math.ceil(total / (parseInt(req.query.limit) || 10)),
+      },
+    });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }

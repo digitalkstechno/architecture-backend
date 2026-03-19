@@ -4,10 +4,35 @@ export const createProjectStage = async(data, tenantId)=>{
 
   return await ProjectStage.create({...data, tenantId});
 };
-export const getProjectStage = async (tenantId) => {
-  return await ProjectStage
-    .find({ tenantId: tenantId })
-    .populate("projectId");
+export const getProjectStage = async (queryParams,tenantId) => {
+
+  let filter = {
+    tenantId: tenantId, // ✅ IMPORTANT
+  };
+
+  if (queryParams.stageName) {
+    filter.stageName = {
+      $regex: queryParams.stageName,
+      $options: "i",
+    };
+  };
+  if (queryParams.order) {
+    filter.order = {
+      $regex: queryParams.order,
+      $options: "i",
+    };
+  };
+  if (queryParams.status) {
+    filter.status = {
+      $regex: queryParams.status,
+      $options: "i",
+    };
+  };
+  const projectstage = await ProjectStage.find(filter)
+      .sort({ createdAt: -1 })
+      .lean()
+      .populate("projectId");
+    return projectstage;
 };
 export const getProjectStageById = async(id, tenantId)=>{
 

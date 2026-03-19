@@ -14,15 +14,31 @@ export const createUser = async (data, tenantId) => {
 
   return User.create({ ...data, tenantId });
 };
-export const getUser = async (tenantId) => {
-  // Expects STRING
-  return User.find({ tenantId: tenantId }) // ✅ { tenantId: "6979..." }
-    .populate({
-      path: "role",
-      populate: {
-        path: "permissions",
-      },
-    });
+export const getUser = async (queryParams, tenantId) => {
+  let filter = {
+    tenantId: tenantId   // ✅ IMPORTANT
+  };
+
+  if (queryParams.userName) {
+    filter.userName = {
+      $regex: queryParams.userName,
+      $options: "i",
+    };
+  }
+
+  if (queryParams.contact_no) {
+    filter.contact_no = {
+      $regex: queryParams.contact_no,
+      $options: "i",
+    };
+  }
+
+  const users = await User.find(filter)
+    .populate("role")
+    .sort({ createdAt: -1 })
+    .lean();
+
+  return users;
 };
 
 export const getUserbyId = async (tenantId, id) => {
