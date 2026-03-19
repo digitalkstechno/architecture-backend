@@ -4,12 +4,15 @@ import bcrypt from "bcryptjs";
 import Tenant from "../models/tenant.model.js";
 import { generateJsonWebToken } from "../utils/jwt.js";
 
-export const Login = async ({ email, password }) => {
+export const Login = async (body) => {
+  const { userName, password } = body;
 
-  console.log("📥 Incoming Login:", { email, password });
+  console.log("📥 Incoming Login:", { userName, password });
 
   // 1️⃣ Try finding in User
-  let user = await User.findOne({ email })
+  let user = await User.findOne({ 
+    userName: { $regex: `^${userName}$`, $options: 'i' } 
+  })
     .populate({
       path: "role",
       populate: { path: "permissions" },
@@ -18,9 +21,11 @@ export const Login = async ({ email, password }) => {
 
   console.log("👤 User from User collection:", user);
 
-  // 2️⃣ If not found → check Client
+  // 2️⃣ If not found → check Client (using clientName as username)
   if (!user) {
-    user = await Client.findOne({ email })
+    user = await Client.findOne({ 
+      clientName: { $regex: `^${userName}$`, $options: 'i' } 
+    })
       .populate({
         path: "role",
         populate: { path: "permissions" },
@@ -32,7 +37,7 @@ export const Login = async ({ email, password }) => {
 
   // ❌ User not found
   if (!user) {
-    console.log("❌ No user found with this email");
+    console.log("❌ No user found with this username:", userName);
     throw new Error("User not found");
   }
 
@@ -40,9 +45,17 @@ export const Login = async ({ email, password }) => {
   console.log("🔑 Entered Password:", password);
   console.log("🔒 Stored Password:", user.password);
 
-  const match = await bcrypt.compare(password, user.password);
+  let match = false;
+  if (user.password) {
+    match = await bcrypt.compare(password, user.password);
+    
+    // Fallback for plain text passwords (useful if manually added to DB)
+    if (!match && password === user.password) {
+      match = true;
+    }
+  }
 
-  console.log("✅ Password Match:", match);
+  console.log("✅ Password Match Result:", match);
 
   if (!match) {
     console.log("❌ Password mismatch");
