@@ -30,7 +30,7 @@ export const Login = async ({ email, password }) => {
 
   console.log("👤 User from User collection:", user);
 
-  // 2️⃣ If not found → check Client
+  // 2️⃣ If not found → check Client (using clientName as username)
   if (!user) {
     user = await Client.findOne({
       $or: [
