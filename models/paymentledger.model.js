@@ -8,7 +8,12 @@ const paymentLedgerSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
-
+    
+    clientId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Client",
+          required: true,
+        },
     transactionType: {
       type: String,
       enum: ["CREDIT", "DEBIT"],
