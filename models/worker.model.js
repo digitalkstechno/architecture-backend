@@ -23,6 +23,8 @@ const workerSchema = new mongoose.Schema(
     },
 
     dailyWage: Number,
+    contractAmount: Number,
+    contractPeriod: String
   },
   { timestamps: true },
 );

@@ -14,7 +14,7 @@ export const getWorkerpayment = async (queryParams,tenantId) => {
       $regex: queryParams.paymentDate,
       $options: "i",
     };
-  }
+  };
    const workerpayments = await Workerpayment.find(filter)
         .sort({ createdAt: -1 })
         .lean()

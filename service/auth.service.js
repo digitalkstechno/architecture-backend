@@ -5,11 +5,23 @@ import Tenant from "../models/tenant.model.js";
 import { generateJsonWebToken } from "../utils/jwt.js";
 
 export const Login = async ({ email, password }) => {
+  // ✅ Normalize input
+  const loginId = email?.trim();   // can be email OR username
+  const pass = password?.trim();
 
-  console.log("📥 Incoming Login:", { email, password });
+  console.log("📥 Incoming Login:", { loginId, pass });
 
-  // 1️⃣ Try finding in User
-  let user = await User.findOne({ email })
+  if (!loginId || !pass) {
+    throw new Error("Email/Username and password are required");
+  }
+
+  // 1️⃣ Find in User (email OR username)
+  let user = await User.findOne({
+    $or: [
+      { email: loginId },
+      { userName: loginId }
+    ]
+  })
     .populate({
       path: "role",
       populate: { path: "permissions" },
@@ -20,7 +32,12 @@ export const Login = async ({ email, password }) => {
 
   // 2️⃣ If not found → check Client
   if (!user) {
-    user = await Client.findOne({ email })
+    user = await Client.findOne({
+      $or: [
+        { email: loginId },
+        { clientName: loginId }
+      ]
+    })
       .populate({
         path: "role",
         populate: { path: "permissions" },
@@ -30,29 +47,27 @@ export const Login = async ({ email, password }) => {
     console.log("👤 User from Client collection:", user);
   }
 
-  // ❌ User not found
+  // ❌ Not found
   if (!user) {
-    console.log("❌ No user found with this email");
+    console.log("❌ No user found");
     throw new Error("User not found");
   }
 
   // 3️⃣ Password check
-  console.log("🔑 Entered Password:", password);
+  console.log("🔑 Entered Password:", pass);
   console.log("🔒 Stored Password:", user.password);
 
-  const match = await bcrypt.compare(password, user.password);
+  const isMatch = await bcrypt.compare(pass, user.password);
 
-  console.log("✅ Password Match:", match);
+  console.log("✅ Password Match:", isMatch);
 
-  if (!match) {
-    console.log("❌ Password mismatch");
+  if (!isMatch) {
     throw new Error("Invalid credentials");
   }
 
   /* ---------------- TENANT CHECK ---------------- */
   if (!user.isSuperAdmin) {
     if (!user.tenantId) {
-      console.log("❌ Tenant missing");
       throw new Error("Tenant not assigned");
     }
 

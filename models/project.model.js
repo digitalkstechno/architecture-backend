@@ -1,34 +1,38 @@
 import mongoose from "mongoose";
 
+const projectSchema = new mongoose.Schema(
+  {
+    tenantId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tenant",
+      // required: true
+    },
 
-const projectSchema = new mongoose.Schema({
+    clientId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Client",
+      required: true,
+    },
 
-  tenantId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Tenant",
-    // required: true
+    projectName: String,
+
+    siteAddress: String,
+
+    startDate: Date,
+    expectedEndDate: Date,
+
+    budget: Number,
+
+    status: {
+      type: String,
+      enum: ["PLANNING", "ACTIVE", "ON_HOLD", "COMPLETED"],
+    },
+
+    totalReceived: { type: Number, default: 0 }, // client se kitna paisa aaya
+    totalExpense: { type: Number, default: 0 }, // kitna kharch hua
+    balance: { type: Number, default: 0 }, // remaining
   },
-
-  clientId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Client",
-    required: true
-  },
-
-  projectName: String,
-
-  siteAddress: String,
-
-  startDate: Date,
-  expectedEndDate: Date,
-
-  budget: Number,
-
-  status: {
-    type: String,
-    enum: ["PLANNING","ACTIVE","ON_HOLD","COMPLETED"]
-  }
-
-}, { timestamps: true });
+  { timestamps: true },
+);
 
 export default mongoose.model("Project", projectSchema);

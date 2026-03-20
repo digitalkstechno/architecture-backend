@@ -25,6 +25,16 @@ const userschema = new mongoose.Schema({
     type: String,
     unique: true,
   },
+  employmentType: {
+  type: String,
+  enum: ["DAILY", "MONTHLY", "CONTRACT"]
+},
+
+salaryConfig: {
+  dailyWage: Number,
+  monthlySalary: Number,
+  contractAmount: Number
+}
 }, { timestamps: true });
 
 export default mongoose.model("User", userschema);

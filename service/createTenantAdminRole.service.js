@@ -6,10 +6,15 @@ export const createTenantAdminRole = async (tenantId) => {
     { module: "USER", actions: ["READ","CREATE"] },
     { module: "ROLE", actions: ["READ","CREATE"] },
     { module: "PERMISSION", actions: ["READ","CREATE"] },
+    { module: "PROJECT_ESTIMATION", actions: ["READ", "CREATE"] },
     { module: "PROJECT", actions: ["READ", "CREATE"] },
-    { module: "PAYMENT_LEDGER", actions: ["READ","CREATE"] },
+    { module: "PROJECT_STAGE", actions: ["READ", "CREATE"] },
     { module: "PROJET_TASK", actions: ["READ","CREATE"] },
+    { module: "PROJECT_UPDATE", actions: ["READ","CREATE"] },
+    { module: "PAYMENT_LEDGER", actions: ["READ","CREATE"] },
+    { module: "PAYMENT", actions: ["READ","CREATE"] },
     { module: "BANK_BRIEF", actions: ["READ","CREATE"] },
+    { module: "CLIENT", actions: ["READ","CREATE"] },
   ]);
 
   const role = await Role.create({
