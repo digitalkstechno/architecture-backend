@@ -15,8 +15,17 @@
 
     status: {
       type: String,
-      enum: ["DRAFT","SENT","APPROVED","REJECTED"]
-    }
+      enum: ["DRAFT", "NEGOTIATION", "APPROVED", "REJECTED"],
+      default: "DRAFT"
+    },
+
+    costBreakdown: [
+      {
+        item: String,
+        amount: Number,
+        description: String
+      }
+    ]
 
   });
 

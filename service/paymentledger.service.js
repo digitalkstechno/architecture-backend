@@ -1,7 +1,35 @@
 import PaymentLedger from "../models/paymentledger.model.js";
+import BankBrief from "../models/bankbrief.model.js";
+import Project from "../models/project.model.js";
 
 export const createLedgerEntry = async (data) => {
-  return await PaymentLedger.create(data);
+  // 1. Create Ledger Entry
+  const ledger = await PaymentLedger.create(data);
+
+  // 2. Update Bank Balance
+  const bank = await BankBrief.findById(data.bankId);
+  if (bank) {
+    if (data.transactionType === "CREDIT") {
+      bank.currentBalance += data.amount;
+    } else {
+      bank.currentBalance -= data.amount;
+    }
+    await bank.save();
+  }
+
+  // 3. Update Project Financials
+  const project = await Project.findById(data.projectId);
+  if (project) {
+    if (data.transactionType === "CREDIT") {
+      project.totalReceived = (project.totalReceived || 0) + data.amount;
+    } else {
+      project.totalExpense = (project.totalExpense || 0) + data.amount;
+    }
+    project.balance = (project.totalReceived || 0) - (project.totalExpense || 0);
+    await project.save();
+  }
+
+  return ledger;
 };
 
 export const getPaymentLedger = async (queryParams, tenantId) => {
