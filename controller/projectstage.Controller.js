@@ -15,8 +15,12 @@ export const createProjectstageController = async (req, res) => {
 };
 export const getProjectstageController = async (req, res) => {
   try {
+
+    // console.log("controller called")
     const tenantId = req.user.tenantId;
+    // console.log("🚀 ~ getProjectstageController ~ tenantId:", tenantId)
     const projectstage = await getProjectStage(req.query, tenantId);
+    // console.log("🚀 ~ getProjectstageController ~ projectstage:", projectstage)
     const total = await Projectstage.countDocuments({
                   tenantId: tenantId, // ✅ FIX
                 });
