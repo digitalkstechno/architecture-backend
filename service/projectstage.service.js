@@ -10,6 +10,10 @@ export const getProjectStage = async (queryParams, tenantId) => {
     tenantId: tenantId,
   };
 
+  if (queryParams.projectId) {
+    filter.projectId = queryParams.projectId;
+  }
+
   if (queryParams.stageName) {
     filter.stageName = {
       $regex: queryParams.stageName,
@@ -31,7 +35,7 @@ export const getProjectStage = async (queryParams, tenantId) => {
   console.log("FINAL FILTER:", filter); // 👈 check this
 
   const projectstage = await ProjectStage.find(filter)
-    .sort({ createdAt: -1 })
+    .sort({ order: 1, createdAt: -1 })
     .lean()
     .populate("projectId");
 

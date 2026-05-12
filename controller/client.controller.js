@@ -7,9 +7,11 @@ import {
   deleteClient,
 } from "../service/client.service.js";
 
+const getTenantId = (req) => req.user.tenantId?._id || req.user.tenantId;
+
 export const creatClientController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
 
     const clients = await createClient(req.body, tenantId);
 
@@ -21,11 +23,9 @@ export const creatClientController = async (req, res) => {
 };
 export const getClientController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const clients = await getClient(req.query, tenantId);
-    const total = await Client.countDocuments({
-      tenantId: tenantId, // ✅ FIX
-    });
+    const total = await Client.countDocuments({ tenantId });
     return res.status(200).json({
       success: true,
       message: "Clients retrieved successfully",
@@ -44,7 +44,7 @@ export const getClientController = async (req, res) => {
 };
 export const getClientByIdController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
 
     const clients = await getClientbyId(req.params.id, tenantId);
     return res.status(200).json(clients);
@@ -55,7 +55,7 @@ export const getClientByIdController = async (req, res) => {
 };
 export const updateClientController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
 
     const clients = await updateClient(req.params.id, req.body, tenantId);
 
@@ -67,7 +67,7 @@ export const updateClientController = async (req, res) => {
 };
 export const deleteClientController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
 
     const clients = await deleteClient(req.params.id, tenantId);
     return res.status(204).json(clients);

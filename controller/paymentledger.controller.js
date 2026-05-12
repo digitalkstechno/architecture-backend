@@ -7,10 +7,12 @@ import {
 } from "../service/paymentledger.service.js";
 import PaymentLedger from "../models/paymentledger.model.js";
 
+const getTenantId = (req) => req.user.tenantId?._id || req.user.tenantId;
+
 export const CreateLedgerEntryController = async (req, res) => {
   try {
     const ledger = await createLedgerEntry({
-      tenantId: req.user.tenantId,
+      tenantId: getTenantId(req),
       ...req.body,
     });
 
@@ -22,11 +24,9 @@ export const CreateLedgerEntryController = async (req, res) => {
 
 export const getPaymentLedgerController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const PaymentLedgers = await getPaymentLedger(req.query, tenantId);
-    const total = await PaymentLedger.countDocuments({
-      tenantId: tenantId, // ✅ FIX
-    });
+    const total = await PaymentLedger.countDocuments({ tenantId });
 
     return res.status(200).json({
       success: true,
@@ -47,7 +47,7 @@ export const getPaymentLedgerController = async (req, res) => {
 
 export const getPaymentLedgerByIdController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const PaymentLedgers = await getPaymentLedgerById(req.params.id, tenantId);
     return res.status(200).json(PaymentLedgers);
   } catch (error) {
@@ -57,7 +57,7 @@ export const getPaymentLedgerByIdController = async (req, res) => {
 };
 export const updatePaymentLedgerController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
 
     const PaymentLedger = await updatePaymentLedger(req.params.id, req.body, tenantId);
 
@@ -69,7 +69,7 @@ export const updatePaymentLedgerController = async (req, res) => {
 };
 export const deletePaymentLedgerController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const PaymentLedgers = await deletePaymentLedger(req.params.id, tenantId);
     return res.status(204).json(PaymentLedgers);
   } catch (error) {

@@ -7,9 +7,11 @@ import {
   deleteWorker,
 } from "../service/worker.service.js";
 
+const getTenantId = (req) => req.user.tenantId?._id || req.user.tenantId;
+
 export const createWorkerController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const Workers = await createWorker(req.body, tenantId);
     return res.status(201).json(Workers);
   } catch (error) {
@@ -19,11 +21,9 @@ export const createWorkerController = async (req, res) => {
 };
 export const getWorkerController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const Workers = await getWorker(req.query, tenantId);
-    const total = await Worker.countDocuments({
-      tenantId: tenantId, // ✅ FIX
-    });
+    const total = await Worker.countDocuments({ tenantId });
 
     return res.status(200).json({
       success: true,
@@ -44,7 +44,7 @@ export const getWorkerController = async (req, res) => {
 
 export const getWorkerByIdController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const Workers = await getWorkerById(req.params.id, tenantId);
     return res.status(200).json(Workers);
   } catch (error) {
@@ -54,7 +54,7 @@ export const getWorkerByIdController = async (req, res) => {
 };
 export const updateWorkerController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
 
     const Worker = await updateWorker(req.params.id, req.body, tenantId);
 
@@ -66,7 +66,7 @@ export const updateWorkerController = async (req, res) => {
 };
 export const deleteWorkerController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const Workers = await deleteWorker(req.params.id, tenantId);
     return res.status(204).json(Workers);
   } catch (error) {

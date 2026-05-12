@@ -67,17 +67,15 @@ export const Login = async ({ email, password }) => {
 
   /* ---------------- TENANT CHECK ---------------- */
   if (!user.isSuperAdmin) {
-    if (!user.tenantId) {
-      throw new Error("Tenant not assigned");
-    }
+    if (!user.tenantId) throw new Error("Tenant not assigned");
 
-    const tenant = await Tenant.findById(user.tenantId);
-
-    console.log("🏢 Tenant:", tenant);
+    // tenantId may be populated object or raw ObjectId
+    const tenant = user.tenantId?._id
+      ? user.tenantId  // already populated
+      : await Tenant.findById(user.tenantId);
 
     if (!tenant) throw new Error("Tenant not found");
     if (!tenant.isActive) throw new Error("Tenant is disabled");
-
     if (
       tenant.subscription?.status !== "TRIAL" &&
       tenant.subscription?.status !== "ACTIVE"
@@ -86,18 +84,15 @@ export const Login = async ({ email, password }) => {
     }
   }
 
-  // 4️⃣ Generate token
   const token = generateJsonWebToken(user);
-
-  console.log("🎉 Login Success");
 
   return {
     token,
     user: {
       _id: user._id,
-      name: user.userName || user.clientName,
+      name: user.userName || user.clientName || user.name,
       email: user.email,
-      tenantId: user.tenantId,
+      tenantId: user.tenantId?._id || user.tenantId,
       role: user.role,
     },
   };

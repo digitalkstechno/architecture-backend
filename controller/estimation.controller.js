@@ -2,9 +2,11 @@ import Projectestimation from "../models/estimation.model.js";
 import { createProjectestimation,getProjectestimation, getProjectestimationById, updateProjectestimation, deleteProjectestimation } from "../service/estimation.service.js";
 
 
+const getTenantId = (req) => req.user.tenantId?._id || req.user.tenantId;
+
 export const createProjectestimationController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const Projectestimations = await createProjectestimation(req.body, tenantId);
     return res.status(201).json(Projectestimations);
   } catch (error) {
@@ -14,11 +16,9 @@ export const createProjectestimationController = async (req, res) => {
 };
 export const getProjectestimationController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const Projectestimations = await getProjectestimation(req.query, tenantId);
-     const total = await Projectestimation.countDocuments({
-              tenantId: tenantId, // ✅ FIX
-            });
+    const total = await Projectestimation.countDocuments({ tenantId });
 
     return res.status(200).json({
       success: true,
@@ -40,7 +40,7 @@ export const getProjectestimationController = async (req, res) => {
 
 export const getProjectestimationByIdController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const Projectestimations = await getProjectestimationById(req.params.id, tenantId);
     return res.status(200).json(Projectestimations);
   } catch (error) {
@@ -50,7 +50,7 @@ export const getProjectestimationByIdController = async (req, res) => {
 };
 export const updateProjectestimationController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
 
     const Projectestimation = await updateProjectestimation(
       req.params.id,
@@ -66,7 +66,7 @@ export const updateProjectestimationController = async (req, res) => {
 };
 export const deleteProjectestimationController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const Projectestimations = await deleteProjectestimation(req.params.id , tenantId);
     return res.status(204).json(Projectestimations);
   } catch (error) {

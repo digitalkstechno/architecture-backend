@@ -2,9 +2,11 @@ import Attendence from "../models/attendence.model.js";
 import { createAttendence, getAttendence, getAttendenceById, updateAttendence, deleteAttendence } from "../service/attendence.service.js";
 
 
+const getTenantId = (req) => req.user.tenantId?._id || req.user.tenantId;
+
 export const createAttendenceController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const Attendences = await createAttendence(req.body, tenantId);
     return res.status(201).json(Attendences);
   } catch (error) {
@@ -14,11 +16,9 @@ export const createAttendenceController = async (req, res) => {
 };
 export const getAttendenceController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const Attendences = await getAttendence(req.query, tenantId);
-         const total = await Attendence.countDocuments({
-                  tenantId: tenantId, // ✅ FIX
-                });
+    const total = await Attendence.countDocuments({ tenantId });
             
                 return res.status(200).json({
                   success: true,
@@ -39,7 +39,7 @@ export const getAttendenceController = async (req, res) => {
 
 export const getAttendenceByIdController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const Attendences = await getAttendenceById(req.params.id, tenantId);
     return res.status(200).json(Attendences);
   } catch (error) {
@@ -49,7 +49,7 @@ export const getAttendenceByIdController = async (req, res) => {
 };
 export const updateAttendenceController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
 
     const Attendence = await updateAttendence(
       req.params.id,
@@ -65,7 +65,7 @@ export const updateAttendenceController = async (req, res) => {
 };
 export const deleteAttendenceController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const Attendences = await deleteAttendence(req.params.id , tenantId);
     return res.status(204).json(Attendences);
   } catch (error) {

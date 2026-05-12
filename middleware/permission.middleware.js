@@ -66,7 +66,11 @@ export const checkPermission = (module, action) => {
         return next();
       }
 
-      return res.status(403).json({ message: "Permission Denied!" });
+      return res.status(403).json({ 
+        message: `Oops! You don't have permission to ${action.toLowerCase()} in the ${module.toLowerCase()} module.`,
+        module,
+        action 
+      });
 
     } catch (err) {
       console.error("checkPermission error:", err);

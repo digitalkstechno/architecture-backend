@@ -3,11 +3,12 @@ import { createProjectupdate, deleteProjectupdate, getProjectupdate,getProjectup
 
 
 
+const getTenantId = (req) => req.user.tenantId?._id || req.user.tenantId;
+
 export const createProjectupdateController = async (req, res) => {
   try {
-
     const data = { ...req.body };
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
 
     /* ===== multiple images ===== */
 
@@ -26,11 +27,9 @@ export const createProjectupdateController = async (req, res) => {
 };
 export const getProjectupdateController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const Projectupdates = await getProjectupdate(req.query, tenantId);
-     const total = await Projectupdate.countDocuments({
-                      tenantId: tenantId, // ✅ FIX
-                    });
+    const total = await Projectupdate.countDocuments({ tenantId });
     return res.status(200).json({
       success: true,
       message: "Projectupdates retrieved successfully",
@@ -50,7 +49,7 @@ export const getProjectupdateController = async (req, res) => {
 
 export const getProjectupdateByIdController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const Projectupdates = await getProjectupdateById(req.params.id, tenantId);
     return res.status(200).json(Projectupdates);
   } catch (error) {
@@ -60,8 +59,7 @@ export const getProjectupdateByIdController = async (req, res) => {
 };
 export const updateProjectupdateController = async (req, res) => {
   try {
-
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const data = { ...req.body };
 
     /* ===== image handle ===== */
@@ -85,7 +83,7 @@ export const updateProjectupdateController = async (req, res) => {
 };
 export const deleteProjectupdateController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const Projectupdates = await deleteProjectupdate(req.params.id , tenantId);
     return res.status(204).json(Projectupdates);
   } catch (error) {

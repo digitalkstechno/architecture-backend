@@ -3,9 +3,23 @@ import { createProjectStage, getProjectStage, getProjectStageById, updateProject
 
 
 
+const getTenantId = (req) => req.user.tenantId?._id || req.user.tenantId;
+
 export const createProjectstageController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
+    const { projectId, order } = req.body;
+
+    if (!projectId) {
+      return res.status(400).json({ error: "projectId is required" });
+    }
+
+    // Check if stage with same order already exists for this project
+    const existingStage = await Projectstage.findOne({ projectId, order, tenantId });
+    if (existingStage) {
+      return res.status(400).json({ error: `Stage with order ${order} already exists for this project.` });
+    }
+
     const projectstage = await createProjectStage(req.body, tenantId);
     return res.status(201).json(projectstage);
   } catch (error) {
@@ -17,13 +31,13 @@ export const getProjectstageController = async (req, res) => {
   try {
 
     // console.log("controller called")
-    const tenantId = req.user.tenantId;
-    // console.log("🚀 ~ getProjectstageController ~ tenantId:", tenantId)
+    const tenantId = getTenantId(req);
     const projectstage = await getProjectStage(req.query, tenantId);
-    // console.log("🚀 ~ getProjectstageController ~ projectstage:", projectstage)
-    const total = await Projectstage.countDocuments({
-                  tenantId: tenantId, // ✅ FIX
-                });
+    
+    const countFilter = { tenantId: tenantId };
+    if (req.query.projectId) countFilter.projectId = req.query.projectId;
+    
+    const total = await Projectstage.countDocuments(countFilter);
 
     return res.status(200).json({
       success: true,
@@ -44,7 +58,7 @@ export const getProjectstageController = async (req, res) => {
 
 export const getProjectstageByIdController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const projectstage = await getProjectStageById(req.params.id, tenantId);
     return res.status(200).json(projectstage);
   } catch (error) {
@@ -54,7 +68,7 @@ export const getProjectstageByIdController = async (req, res) => {
 };
 export const updateProjectstageController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
 
     const projectstage = await updateProjectStage(
       req.params.id,
@@ -70,7 +84,7 @@ export const updateProjectstageController = async (req, res) => {
 };
 export const deleteProjectstageController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const projectstage = await deleteProjectStage(req.params.id , tenantId);
     return res.status(204).json(projectstage);
   } catch (error) {

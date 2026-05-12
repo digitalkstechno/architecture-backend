@@ -1,10 +1,11 @@
 import { createBank, getTenantBanks } from "../service/bankbrief.service.js";
 
+const getTenantId = (req) => req.user.tenantId?._id || req.user.tenantId;
+
 export const CreateBankController = async (req, res) => {
   try {
-
     const bank = await createBank({
-      tenantId: req.user.tenantId,
+      tenantId: getTenantId(req),
       ...req.body
     });
 
@@ -17,8 +18,7 @@ export const CreateBankController = async (req, res) => {
 
 export const GetTenantBanksController = async (req, res) => {
   try {
-
-    const banks = await getTenantBanks(req.user.tenantId);
+    const banks = await getTenantBanks(getTenantId(req));
 
     res.json(banks);
 

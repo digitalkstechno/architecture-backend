@@ -7,9 +7,11 @@ import {
   deleteProject,
 } from "../service/project.service.js";
 
+const getTenantId = (req) => req.user.tenantId?._id || req.user.tenantId;
+
 export const createProjectController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const projects = await createProject(req.body, tenantId);
     return res.status(201).json(projects);
   } catch (error) {
@@ -19,11 +21,9 @@ export const createProjectController = async (req, res) => {
 };
 export const getProjectController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const projects = await getProject(req.query, tenantId);
-     const total = await Project.countDocuments({
-          tenantId: tenantId, // ✅ FIX
-        });
+    const total = await Project.countDocuments({ tenantId });
 
     return res.status(200).json({
       success: true,
@@ -44,7 +44,7 @@ export const getProjectController = async (req, res) => {
 
 export const getProjectByIdController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const projects = await getProjectById(req.params.id, tenantId);
     return res.status(200).json(projects);
   } catch (error) {
@@ -54,7 +54,7 @@ export const getProjectByIdController = async (req, res) => {
 };
 export const updateProjectController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
 
     const project = await updateProject(
       req.params.id,
@@ -70,7 +70,7 @@ export const updateProjectController = async (req, res) => {
 };
 export const deleteProjectController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const tenantId = getTenantId(req);
     const projects = await deleteProject(req.params.id , tenantId);
     return res.status(204).json(projects);
   } catch (error) {
