@@ -16,9 +16,12 @@ export const createAttendenceController = async (req, res) => {
 };
 export const getAttendenceController = async (req, res) => {
   try {
-    const tenantId = getTenantId(req);
-    const Attendences = await getAttendence(req.query, tenantId);
-    const total = await Attendence.countDocuments({ tenantId });
+    const isSuperAdmin = req.user.isSuperAdmin;
+    const tenantId = isSuperAdmin ? null : getTenantId(req);
+    const Attendences = await getAttendence(req.query, tenantId, isSuperAdmin);
+    
+    const filter = isSuperAdmin ? {} : { tenantId };
+    const total = await Attendence.countDocuments(filter);
             
                 return res.status(200).json({
                   success: true,

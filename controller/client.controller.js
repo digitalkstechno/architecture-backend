@@ -23,9 +23,14 @@ export const creatClientController = async (req, res) => {
 };
 export const getClientController = async (req, res) => {
   try {
-    const tenantId = getTenantId(req);
-    const clients = await getClient(req.query, tenantId);
-    const total = await Client.countDocuments({ tenantId });
+    const isSuperAdmin = req.user.isSuperAdmin;
+    const tenantId = isSuperAdmin ? null : getTenantId(req);
+    
+    const clients = await getClient(req.query, tenantId, isSuperAdmin);
+    
+    const filter = isSuperAdmin ? {} : { tenantId };
+    const total = await Client.countDocuments(filter);
+    
     return res.status(200).json({
       success: true,
       message: "Clients retrieved successfully",

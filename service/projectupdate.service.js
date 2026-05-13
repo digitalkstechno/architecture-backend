@@ -3,10 +3,12 @@ import Projectupdate from "../models/projectupdate.model.js";
 export const createProjectupdate = async (data, tenantId) => {
   return await Projectupdate.create({ ...data, tenantId });
 };
-export const getProjectupdate = async (queryParams, tenantId) => {
-  let filter = {
-    tenantId: tenantId, // ✅ IMPORTANT
-  };
+export const getProjectupdate = async (queryParams, tenantId, isSuperAdmin = false) => {
+  let filter = {};
+  
+  if (!isSuperAdmin) {
+    filter.tenantId = tenantId;
+  }
 
   const projectupdate = await Projectupdate.find(filter)
     .sort({ createdAt: -1 })

@@ -3,10 +3,12 @@ import Attendence from "../models/attendence.model.js";
 export const createAttendence = async (data, tenantId) => {
   return await Attendence.create({ ...data, tenantId });
 };
-export const getAttendence = async (queryParams, tenantId) => {
-  let filter = {
-    tenantId: tenantId, // ✅ IMPORTANT
-  };
+export const getAttendence = async (queryParams, tenantId, isSuperAdmin = false) => {
+  let filter = {};
+  
+  if (!isSuperAdmin) {
+    filter.tenantId = tenantId;
+  }
   if (queryParams.date) {
     filter.date = {
       $regex: queryParams.date,

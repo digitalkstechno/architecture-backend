@@ -3,10 +3,12 @@ import Project from "../models/project.model.js";
 export const createProject = async (data, tenantId) => {
   return await Project.create({ ...data, tenantId });
 };
-export const getProject = async (queryParams, tenantId) => {
-  let filter = {
-    tenantId: tenantId, // ✅ IMPORTANT
-  };
+export const getProject = async (queryParams, tenantId, isSuperAdmin = false) => {
+  let filter = {};
+  
+  if (!isSuperAdmin) {
+    filter.tenantId = tenantId;
+  }
 
   if (queryParams.projectName) {
     filter.projectName = {

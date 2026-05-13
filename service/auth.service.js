@@ -94,6 +94,7 @@ export const Login = async ({ email, password }) => {
       email: user.email,
       tenantId: user.tenantId?._id || user.tenantId,
       role: user.role,
+      isSuperAdmin: user.isSuperAdmin,
     },
   };
 };

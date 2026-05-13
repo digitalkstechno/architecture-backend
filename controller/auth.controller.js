@@ -2,18 +2,19 @@ import { Login, Logout } from "../service/auth.service.js";
 
 export const LoginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, userName, password } = req.body;
+    const loginIdentifier = email || userName;
 
     console.log("📥 Request Body:", req.body);
 
-    if (!email || !password) {
+    if (!loginIdentifier || !password) {
       return res.status(400).json({
         success: false,
         message: "Email/Username and password are required",
       });
     }
 
-    const login = await Login({ email, password });
+    const login = await Login({ email: loginIdentifier, password });
 
     return res.status(200).json({
       success: true,

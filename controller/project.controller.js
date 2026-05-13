@@ -21,9 +21,12 @@ export const createProjectController = async (req, res) => {
 };
 export const getProjectController = async (req, res) => {
   try {
-    const tenantId = getTenantId(req);
-    const projects = await getProject(req.query, tenantId);
-    const total = await Project.countDocuments({ tenantId });
+    const isSuperAdmin = req.user.isSuperAdmin;
+    const tenantId = isSuperAdmin ? null : getTenantId(req);
+    const projects = await getProject(req.query, tenantId, isSuperAdmin);
+    
+    const filter = isSuperAdmin ? {} : { tenantId };
+    const total = await Project.countDocuments(filter);
 
     return res.status(200).json({
       success: true,

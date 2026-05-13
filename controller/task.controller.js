@@ -21,9 +21,12 @@ export const createTaskController = async (req, res) => {
 };
 export const getTaskController = async (req, res) => {
   try {
-    const tenantId = getTenantId(req);
-    const Tasks = await getTask(req.query, tenantId);
-    const total = await Task.countDocuments({ tenantId });
+    const isSuperAdmin = req.user.isSuperAdmin;
+    const tenantId = isSuperAdmin ? null : getTenantId(req);
+    const Tasks = await getTask(req.query, tenantId, isSuperAdmin);
+    
+    const filter = isSuperAdmin ? {} : { tenantId };
+    const total = await Task.countDocuments(filter);
 
     return res.status(200).json({
       success: true,

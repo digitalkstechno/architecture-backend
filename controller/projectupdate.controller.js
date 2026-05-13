@@ -27,9 +27,12 @@ export const createProjectupdateController = async (req, res) => {
 };
 export const getProjectupdateController = async (req, res) => {
   try {
-    const tenantId = getTenantId(req);
-    const Projectupdates = await getProjectupdate(req.query, tenantId);
-    const total = await Projectupdate.countDocuments({ tenantId });
+    const isSuperAdmin = req.user.isSuperAdmin;
+    const tenantId = isSuperAdmin ? null : getTenantId(req);
+    const Projectupdates = await getProjectupdate(req.query, tenantId, isSuperAdmin);
+    
+    const filter = isSuperAdmin ? {} : { tenantId };
+    const total = await Projectupdate.countDocuments(filter);
     return res.status(200).json({
       success: true,
       message: "Projectupdates retrieved successfully",

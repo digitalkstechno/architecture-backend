@@ -7,10 +7,13 @@ export const createTask = async (data, tenantId) => {
   console.log("🚀 ~ createTask ~ tenantId:", tenantId)
   return await Task.create({ ...data, tenantId });
 };
-export const getTask = async (queryParams,tenantId) => {
-   let filter = {
-    tenantId: tenantId, // ✅ IMPORTANT
-  };
+export const getTask = async (queryParams, tenantId, isSuperAdmin = false) => {
+  let filter = {};
+  
+  if (!isSuperAdmin) {
+    filter.tenantId = tenantId;
+  }
+
   if (queryParams.title) {
     filter.title = {
       $regex: queryParams.title,

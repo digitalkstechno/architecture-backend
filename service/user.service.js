@@ -14,10 +14,12 @@ export const createUser = async (data, tenantId) => {
 
   return User.create({ ...data, tenantId });
 };
-export const getUser = async (queryParams, tenantId) => {
-  let filter = {
-    tenantId: tenantId   // ✅ IMPORTANT
-  };
+export const getUser = async (queryParams, tenantId, isSuperAdmin = false) => {
+  let filter = {};
+  
+  if (!isSuperAdmin) {
+    filter.tenantId = tenantId;
+  }
 
   if (queryParams.userName) {
     filter.userName = {

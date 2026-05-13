@@ -5,10 +5,12 @@ import bcrypt from "bcryptjs";
 // export const createClient = async (data, tenantId) => {
 //   return await Client.create({ ...data, tenantId });
 // };
-export const getClient = async (queryParams, tenantId) => {
-  let filter = {
-    tenantId: tenantId, // ✅ IMPORTANT
-  };
+export const getClient = async (queryParams, tenantId, isSuperAdmin = false) => {
+  let filter = {};
+  
+  if (!isSuperAdmin) {
+    filter.tenantId = tenantId;
+  }
 
   if (queryParams.clientName) {
     filter.clientName = {

@@ -25,13 +25,13 @@ export const CreateUserController = async (req, res) => {
 
 export const GetUserController = async (req, res) => {
   try {
-    const tenantId = req.user.tenantId;
+    const isSuperAdmin = req.user.isSuperAdmin;
+    const tenantId = isSuperAdmin ? null : req.user.tenantId;
 
-    const users = await getUser(req.query, tenantId);
+    const users = await getUser(req.query, tenantId, isSuperAdmin);
 
-    const total = await User.countDocuments({
-      tenantId: tenantId, // ✅ FIX
-    });
+    const filter = isSuperAdmin ? {} : { tenantId };
+    const total = await User.countDocuments(filter);
 
     return res.status(200).json({
       success: true,
