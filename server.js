@@ -21,6 +21,7 @@ const siteUpdateRoutes = require("./routes/siteUpdateRoutes");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const sitePhotoRoutes = require("./routes/sitePhotoRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
 
 connectDB();
 
@@ -44,6 +45,7 @@ app.use("/api/site-updates", siteUpdateRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/site-photos", sitePhotoRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 app.get("/", (req, res) => res.json({ message: "Architect Backend API Running" }));
 
