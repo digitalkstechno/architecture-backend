@@ -75,17 +75,18 @@ async function compressVideo(buffer, originalName) {
   }
 }
 
-// File filter - allow images, gifs, and videos
+// File filter - allow images, videos, and documents
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|gif|webp|avif|bmp|tiff|tif|svg|ico|heic|heif|mp4|webm|ogg|mov|quicktime/;
+  const allowedTypes = /jpeg|jpg|png|gif|webp|avif|bmp|tiff|tif|svg|ico|heic|heif|mp4|webm|ogg|mov|quicktime|pdf|doc|docx|xls|xlsx|dwg|dxf|txt|csv|zip|rar/;
   const extname = allowedTypes.test(file.originalname.toLowerCase());
   const isImage = file.mimetype.startsWith('image/');
   const isVideo = file.mimetype.startsWith('video/');
+  const isDocument = file.mimetype.includes('pdf') || file.mimetype.includes('document') || file.mimetype.includes('msword') || file.mimetype.includes('excel') || file.mimetype.includes('csv') || file.mimetype.includes('zip');
 
-  if (isImage || isVideo || extname) {
+  if (isImage || isVideo || isDocument || extname) {
     return cb(null, true);
   } else {
-    cb(new Error('Only image and video files are allowed'));
+    cb(new Error('File type not allowed. Supported formats: images, videos, PDFs, documents, CAD.'));
   }
 };
 

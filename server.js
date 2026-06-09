@@ -1,6 +1,7 @@
 const path = require("path");
 require("dotenv").config();
 const express = require("express");
+const http = require("http");
 const cors = require("cors");
 require('node:dns').setServers(['1.1.1.1', '8.8.8.8'])
 
@@ -22,10 +23,18 @@ const attendanceRoutes = require("./routes/attendanceRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const sitePhotoRoutes = require("./routes/sitePhotoRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
+const documentRoutes = require("./routes/documentRoutes");
+const materialRequestRoutes = require("./routes/materialRequestRoutes");
+const invoiceRoutes = require("./routes/invoiceRoutes");
 
 connectDB();
 
 const app = express();
+const server = http.createServer(app);
+
+// Initialize Socket.io
+const io = require("./utils/socket").init(server);
 
 app.use(cors());
 app.use(express.json());
@@ -46,10 +55,14 @@ app.use("/api/attendance", attendanceRoutes);
 app.use("/api/messages", messageRoutes);
 app.use("/api/site-photos", sitePhotoRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/documents", documentRoutes);
+app.use("/api/material-requests", materialRequestRoutes);
+app.use("/api/invoices", invoiceRoutes);
 
 app.get("/", (req, res) => res.json({ message: "Architect Backend API Running" }));
 
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

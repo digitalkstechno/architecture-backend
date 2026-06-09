@@ -1,6 +1,7 @@
 const SiteTask = require("../models/SiteTask");
 const { uploadToExternalAPI } = require("../middleware/upload");
 const { recalculateProjectProgress } = require("../utils/projectProgress");
+const { sendNotification, notifyDirectors } = require("../utils/notification");
 
 const getSiteTasks = async (req, res) => {
   try {
@@ -50,6 +51,11 @@ const createSiteTask = async (req, res) => {
     }
     const task = await SiteTask.create(req.body);
     await recalculateProjectProgress(task.project);
+    
+    if (task.assignedTo && task.assignedTo.length > 0) {
+      await sendNotification(task.assignedTo, `New Site Task assigned: ${task.title}`, 'task_assigned', task._id);
+    }
+
     res.status(201).json(task);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -67,6 +73,11 @@ const updateSiteTask = async (req, res) => {
     const task = await SiteTask.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
     if (!task) return res.status(404).json({ message: "Site Task not found" });
     await recalculateProjectProgress(task.project);
+    
+    if (req.body.status && req.body.status !== 'Pending') {
+      await notifyDirectors(`Site Task "${task.title}" is now ${req.body.status}`, 'task_completed', task._id);
+    }
+    
     res.json(task);
   } catch (err) {
     res.status(400).json({ message: err.message });

@@ -1,6 +1,7 @@
 const OfficeTask = require("../models/OfficeTask");
 const { uploadToExternalAPI } = require("../middleware/upload");
 const { recalculateProjectProgress } = require("../utils/projectProgress");
+const { sendNotification, notifyDirectors } = require("../utils/notification");
 
 const getOfficeTasks = async (req, res) => {
   try {
@@ -48,6 +49,11 @@ const createOfficeTask = async (req, res) => {
     }
     const task = await OfficeTask.create(req.body);
     await recalculateProjectProgress(task.project);
+    
+    if (task.assignedTo && task.assignedTo.length > 0) {
+      await sendNotification(task.assignedTo, `New Office Task assigned: ${task.title}`, 'task_assigned', task._id);
+    }
+
     res.status(201).json(task);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -64,6 +70,11 @@ const updateOfficeTask = async (req, res) => {
     const task = await OfficeTask.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
     if (!task) return res.status(404).json({ message: "Office Task not found" });
     await recalculateProjectProgress(task.project);
+    
+    if (req.body.status && req.body.status !== 'Pending') {
+      await notifyDirectors(`Office Task "${task.title}" is now ${req.body.status}`, 'task_completed', task._id);
+    }
+    
     res.json(task);
   } catch (err) {
     res.status(400).json({ message: err.message });
