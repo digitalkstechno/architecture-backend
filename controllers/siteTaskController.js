@@ -5,13 +5,21 @@ const { sendNotification, notifyDirectors } = require("../utils/notification");
 
 const getSiteTasks = async (req, res) => {
   try {
-    const { project } = req.query;
-    const filter = project ? { project } : {};
-    const tasks = await SiteTask.find(filter)
+    const { project, page, limit, category, assignedTo } = req.query;
+    const filter = {};
+    if (project) filter.project = project;
+    if (category) filter.category = category;
+    if (assignedTo) filter.assignedTo = assignedTo;
+    
+    let query = SiteTask.find(filter)
       .populate("project", "name")
       .populate("assignedTo", "name email")
-      .lean()
-      .sort({ createdAt: -1 });
+      .lean();
+
+    let tasks = await query.sort({ createdAt: -1 });
+
+    const statusOrder = { "Pending": 1, "In Progress": 2, "Completed": 3, "Critical": 0, "Delayed": 0, "On Track": 2 };
+    tasks.sort((a, b) => (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99));
 
     const mappedTasks = tasks.map(task => {
       if (task.progress === 0 || task.progress == null) {
@@ -23,7 +31,23 @@ const getSiteTasks = async (req, res) => {
       return task;
     });
 
-    res.json(mappedTasks);
+    const totalItems = mappedTasks.length;
+    let paginatedTasks = mappedTasks;
+
+    if (page && limit) {
+      const pageNum = parseInt(page);
+      const limitNum = parseInt(limit);
+      paginatedTasks = mappedTasks.slice((pageNum - 1) * limitNum, pageNum * limitNum);
+
+      return res.json({
+        data: paginatedTasks,
+        total: totalItems,
+        page: pageNum,
+        totalPages: Math.ceil(totalItems / limitNum)
+      });
+    }
+
+    res.json(paginatedTasks);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

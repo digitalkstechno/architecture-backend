@@ -3,13 +3,54 @@ const Project = require("../models/Project");
 // GET /api/projects
 const getProjects = async (req, res) => {
   try {
-    const projects = await Project.find()
+    const { page, limit, search, role, userId } = req.query;
+    let filter = {};
+
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { location: { $regex: search, $options: "i" } }
+      ];
+    }
+
+    if (role === 'client' && userId) {
+      filter.client = userId;
+    } else if (role === 'staff' && userId) {
+      filter.$or = [
+        ...(filter.$or || []),
+        { designer: userId },
+        { workers: userId }
+      ];
+    }
+
+    let query = Project.find(filter)
       .populate("client", "name email phone")
       .populate("designer", "name email")
       .populate("supervisor", "name email")
-      .populate("workers", "name email role")
-      .sort({ createdAt: -1 });
-    res.json(projects);
+      .populate("workers", "name email role");
+
+    let projects = await query.sort({ createdAt: -1 });
+
+    const statusOrder = { "Pending": 1, "In Progress": 2, "Completed": 3, "Critical": 0, "Delayed": 0, "On Track": 2 };
+    projects.sort((a, b) => (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99));
+
+    const totalItems = projects.length;
+    let paginatedProjects = projects;
+
+    if (page && limit) {
+      const pageNum = parseInt(page);
+      const limitNum = parseInt(limit);
+      paginatedProjects = projects.slice((pageNum - 1) * limitNum, pageNum * limitNum);
+
+      return res.json({
+        data: paginatedProjects,
+        total: totalItems,
+        page: pageNum,
+        totalPages: Math.ceil(totalItems / limitNum)
+      });
+    }
+
+    res.json(paginatedProjects);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

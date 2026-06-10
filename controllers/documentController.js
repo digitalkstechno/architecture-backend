@@ -43,4 +43,21 @@ const deleteDocument = async (req, res) => {
   }
 };
 
-module.exports = { getDocuments, createDocument, deleteDocument };
+const downloadDocument = async (req, res) => {
+  try {
+    const doc = await Document.findById(req.params.id);
+    if (!doc) return res.status(404).json({ message: "Document not found" });
+    
+    // Redirect to the external URL to trigger download
+    // Cloudinary URLs can have 'fl_attachment' added to force download, but redirecting works generally
+    const downloadUrl = doc.fileUrl.includes('cloudinary') 
+      ? doc.fileUrl.replace('/upload/', '/upload/fl_attachment/')
+      : doc.fileUrl;
+      
+    res.redirect(downloadUrl);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { getDocuments, createDocument, deleteDocument, downloadDocument };
