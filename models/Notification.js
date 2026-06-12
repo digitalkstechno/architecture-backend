@@ -11,11 +11,11 @@ const notificationSchema = new mongoose.Schema({
     required: true,
   },
   type: {
-    type: String, // 'task_assigned', 'task_completed', 'message', 'alert'
+    type: String,
     default: "info",
   },
   relatedId: {
-    type: mongoose.Schema.Types.ObjectId, // Could be task ID, project ID, message ID
+    type: mongoose.Schema.Types.ObjectId,
     required: false,
   },
   isRead: {
