@@ -1,9 +1,8 @@
+require("dotenv").config();
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
 const User = require("./models/User");
 const Role = require("./models/Role");
 require('node:dns').setServers(['1.1.1.1','8.8.8.8']);
-require("dotenv").config();
 
 const rolesData = [
   { 
