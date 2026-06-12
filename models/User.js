@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
+const CryptoJS = require("crypto-js");
 
 const userSchema = new mongoose.Schema(
   {
@@ -34,14 +34,22 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+const SECRET_KEY = process.env.JWT_SECRET || "fallback_secret";
+
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
-  this.password = await bcrypt.hash(this.password, 10);
+  this.password = CryptoJS.AES.encrypt(this.password, SECRET_KEY).toString();
   next();
 });
 
 userSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
+  try {
+    const bytes = CryptoJS.AES.decrypt(this.password, SECRET_KEY);
+    const decryptedPassword = bytes.toString(CryptoJS.enc.Utf8);
+    return enteredPassword === decryptedPassword;
+  } catch (err) {
+    return false;
+  }
 };
 
 module.exports = mongoose.model("User", userSchema);
