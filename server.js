@@ -29,6 +29,7 @@ const materialRequestRoutes = require("./routes/materialRequestRoutes");
 const invoiceRoutes = require("./routes/invoiceRoutes");
 const agencyRoutes = require("./routes/agencyRoutes");
 const guestLoginRoutes = require("./routes/guestLoginRoutes");
+const workingSOPRoutes = require("./routes/workingSOPRoutes");
 
 connectDB();
 
@@ -63,6 +64,7 @@ app.use("/api/material-requests", materialRequestRoutes);
 app.use("/api/invoices", invoiceRoutes);
 app.use("/api/agencies", agencyRoutes);
 app.use("/api/guest-logins", guestLoginRoutes);
+app.use("/api/working-sops", workingSOPRoutes);
 
 app.get("/", (req, res) => res.json({ message: "Architect Backend API Running" }));
 
