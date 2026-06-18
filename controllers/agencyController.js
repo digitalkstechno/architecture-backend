@@ -118,7 +118,7 @@ const submitRegistration = async (req, res) => {
 
 const getPendingRegistrations = async (req, res) => {
   try {
-    const registrations = await AgencyRegistration.find({ status: "Pending" })
+    const registrations = await AgencyRegistration.find({ status: { $in: ["Pending", "Approved"] } })
       .populate("businessType", "name")
       .sort({ createdAt: -1 });
     res.json(registrations);
