@@ -5,11 +5,20 @@ const { sendNotification, notifyDirectors } = require("../utils/notification");
 
 const getOfficeTasks = async (req, res) => {
   try {
-    const { project, page, limit, category, assignedTo } = req.query;
+    const { project, page, limit, category, assignedTo, search } = req.query;
     const filter = {};
     if (project) filter.project = project;
     if (category) filter.category = category;
-    if (assignedTo) filter.assignedTo = assignedTo;
+    if (search) filter.title = { $regex: search, $options: "i" };
+    
+    // RBAC: If not Admin/Director, strictly filter by assignedTo
+    const userRole = req.user && req.user.role ? (req.user.role.name || req.user.role).toLowerCase() : 'guest';
+    const isAdminOrDirector = ['admin', 'director', 'architect'].includes(userRole);
+    if (!isAdminOrDirector) {
+      filter.assignedTo = req.user._id;
+    } else if (assignedTo) {
+      filter.assignedTo = assignedTo;
+    }
     
     let query = OfficeTask.find(filter)
       .populate("project", "name")
