@@ -30,6 +30,7 @@ const invoiceRoutes = require("./routes/invoiceRoutes");
 const agencyRoutes = require("./routes/agencyRoutes");
 const guestLoginRoutes = require("./routes/guestLoginRoutes");
 const workingSOPRoutes = require("./routes/workingSOPRoutes");
+const companyRoutes = require("./routes/companyRoutes");
 
 connectDB();
 
@@ -65,6 +66,7 @@ app.use("/api/invoices", invoiceRoutes);
 app.use("/api/agencies", agencyRoutes);
 app.use("/api/guest-logins", guestLoginRoutes);
 app.use("/api/working-sops", workingSOPRoutes);
+app.use("/api/company", companyRoutes);
 
 app.get("/", (req, res) => res.json({ message: "Architect Backend API Running" }));
 
