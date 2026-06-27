@@ -41,6 +41,7 @@ const checkIn = async (req, res) => {
         user: userId,
         date: today,
         status: "Present",
+        isManual: false,
         logs: [{ checkIn: new Date() }]
       });
     } else {
@@ -51,6 +52,7 @@ const checkIn = async (req, res) => {
       }
       attendance.logs.push({ checkIn: new Date() });
       attendance.status = "Present";
+      attendance.isManual = false;
     }
     
     await attendance.save();
@@ -77,6 +79,7 @@ const checkOut = async (req, res) => {
     lastLog.duration = Math.round((lastLog.checkOut - lastLog.checkIn) / (1000 * 60)); // minutes
     
     attendance.totalMinutes = attendance.logs.reduce((sum, log) => sum + (log.duration || 0), 0);
+    attendance.isManual = false;
     
     await attendance.save();
     res.json(attendance);

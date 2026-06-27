@@ -4,6 +4,7 @@ const SiteTask = require("../models/SiteTask");
 const Message = require("../models/Message");
 const Payment = require("../models/Payment");
 const SiteUpdate = require("../models/SiteUpdate");
+const AgencyRegistration = require("../models/AgencyRegistration");
 
 const getDashboardStats = async (req, res) => {
   try {
@@ -47,23 +48,26 @@ const getDashboardStats = async (req, res) => {
     let totalPending = 0;
 
     if (isAdminOrDirector) {
-      const payments = await Payment.find();
-      payments.forEach(p => {
-        const amount = Number(p.amount) || 0;
-        totalBudget += amount;
-        if (p.status === "Paid") totalReceived += amount;
-        else if (p.status === "Pending") totalPending += amount;
-      });
+      const allProjects = await Project.find();
+      totalBudget = allProjects.reduce((sum, p) => sum + (Number(p.budget) || 0), 0);
+      totalReceived = allProjects.reduce((sum, p) => sum + (Number(p.received) || 0), 0);
+      totalPending = allProjects.reduce((sum, p) => sum + (Number(p.pending) || 0), 0);
     }
 
     // 4. Recent Activity
     let recentMessages = [];
+    let pendingAgencies = [];
     if (isAdminOrDirector) {
       recentMessages = await Message.find().sort({ createdAt: -1 }).limit(10);
+      pendingAgencies = await AgencyRegistration.find({ status: "Pending" })
+        .populate("businessType", "name")
+        .sort({ createdAt: -1 })
+        .limit(5);
     } // Staff could potentially see messages for their projects if implemented, skipping for simplicity unless requested
     
     const recentSiteUpdates = await SiteUpdate.find(projectFilter.hasOwnProperty('$or') ? { project: { $in: await Project.find(projectFilter).distinct('_id') } } : {})
       .populate("project", "name")
+      .populate("postedBy", "name")
       .sort({ createdAt: -1 })
       .limit(10);
     
@@ -91,7 +95,8 @@ const getDashboardStats = async (req, res) => {
         messages: recentMessages,
         siteUpdates: recentSiteUpdates,
         upcomingOfficeTasks,
-        upcomingSiteTasks
+        upcomingSiteTasks,
+        pendingAgencies
       }
     });
 

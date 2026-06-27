@@ -51,6 +51,20 @@ const getPayment = async (req, res) => {
 
 const createPayment = async (req, res) => {
   try {
+    const project = await Project.findById(req.body.project || req.body.projectId);
+    if (!project) return res.status(404).json({ message: "Project not found" });
+
+    const budgetValue = typeof project.budget === 'number' ? project.budget : Number(String(project.budget).replace(/[^0-9.-]+/g, "")) || 0;
+    const existingPayments = await Payment.find({ project: project._id, status: "Paid" });
+    const receivedSoFar = existingPayments.reduce((sum, p) => sum + p.amount, 0);
+
+    const amount = Number(req.body.amount);
+    const maxAllowed = Math.max(0, budgetValue - receivedSoFar);
+
+    if (amount > maxAllowed) {
+      return res.status(400).json({ message: `Amount exceeds Pending Balance. Maximum allowed: ₹${maxAllowed}` });
+    }
+
     const payment = await Payment.create(req.body);
     await updateProjectFinances(payment.project);
     res.status(201).json(payment);
@@ -61,8 +75,27 @@ const createPayment = async (req, res) => {
 
 const updatePayment = async (req, res) => {
   try {
+    const paymentToUpdate = await Payment.findById(req.params.id);
+    if (!paymentToUpdate) return res.status(404).json({ message: "Payment not found" });
+
+    const project = await Project.findById(paymentToUpdate.project);
+    const budgetValue = typeof project.budget === 'number' ? project.budget : Number(String(project.budget).replace(/[^0-9.-]+/g, "")) || 0;
+    
+    const existingPayments = await Payment.find({ project: paymentToUpdate.project, status: "Paid" });
+    let receivedSoFar = existingPayments.reduce((sum, p) => sum + p.amount, 0);
+    
+    if (paymentToUpdate.status === "Paid") {
+      receivedSoFar -= paymentToUpdate.amount; // Remove the old amount of this payment
+    }
+
+    const newAmount = req.body.amount !== undefined ? Number(req.body.amount) : paymentToUpdate.amount;
+    const maxAllowed = Math.max(0, budgetValue - receivedSoFar);
+
+    if (newAmount > maxAllowed) {
+      return res.status(400).json({ message: `Amount exceeds Pending Balance. Maximum allowed: ₹${maxAllowed}` });
+    }
+
     const payment = await Payment.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-    if (!payment) return res.status(404).json({ message: "Payment not found" });
     await updateProjectFinances(payment.project);
     res.json(payment);
   } catch (err) {
