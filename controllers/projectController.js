@@ -13,21 +13,28 @@ const getProjects = async (req, res) => {
       ];
     }
 
-    if (role === 'client' && userId) {
-      filter.client = userId;
-    } else if (role === 'staff' && userId) {
-      filter.$or = [
-        ...(filter.$or || []),
-        { designer: userId },
-        { workers: userId }
-      ];
+    const userRole = req.user && req.user.role ? (req.user.role.name || req.user.role).toLowerCase() : 'guest';
+    const isAdminOrDirector = ['admin', 'director', 'architect'].includes(userRole);
+
+    if (!isAdminOrDirector) {
+      if (userRole === 'client') {
+        filter.client = req.user._id;
+      } else {
+        // Staff (including project manager) only see their assigned projects
+        filter.$or = [
+          ...(filter.$or || []),
+          { projectManager: req.user._id },
+          { supervisor: req.user._id },
+          { workers: req.user._id }
+        ];
+      }
     }
 
     let query = Project.find(filter)
-      .populate("client", "name email phone")
-      .populate("designer", "name email")
-      .populate("supervisor", "name email")
-      .populate("workers", "name email role");
+      .populate("client", "name email phone avatar")
+      .populate("projectManager", "name email phone specializations about avatar")
+      .populate("supervisor", "name email phone specializations about avatar")
+      .populate("workers", "name email role phone specializations about avatar");
 
     let projects = await query.sort({ createdAt: -1 });
 
@@ -60,10 +67,10 @@ const getProjects = async (req, res) => {
 const getProject = async (req, res) => {
   try {
     const project = await Project.findById(req.params.id)
-      .populate("client", "name email phone")
-      .populate("designer", "name email")
-      .populate("supervisor", "name email")
-      .populate("workers", "name email role specializations");
+      .populate("client", "name email phone avatar")
+      .populate("projectManager", "name email phone specializations about avatar")
+      .populate("supervisor", "name email phone specializations about avatar")
+      .populate("workers", "name email role phone specializations about avatar");
     if (!project) return res.status(404).json({ message: "Project not found" });
     res.json(project);
   } catch (err) {

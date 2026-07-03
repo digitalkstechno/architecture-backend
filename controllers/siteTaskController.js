@@ -15,14 +15,26 @@ const getSiteTasks = async (req, res) => {
     const userRole = req.user && req.user.role ? (req.user.role.name || req.user.role).toLowerCase() : 'guest';
     const isAdminOrDirector = ['admin', 'director', 'architect'].includes(userRole);
     if (!isAdminOrDirector) {
-      filter.assignedTo = req.user._id;
+      if (userRole === 'project manager') {
+        const Project = require("../models/Project");
+        const managedProjects = await Project.find({ projectManager: req.user._id }).select("_id");
+        const projectIds = managedProjects.map(p => p._id);
+        
+        filter.$or = [
+          { assignedTo: req.user._id },
+          { project: { $in: projectIds } }
+        ];
+      } else {
+        filter.assignedTo = req.user._id;
+      }
     } else if (assignedTo) {
       filter.assignedTo = assignedTo;
     }
     
     let query = SiteTask.find(filter)
       .populate("project", "name")
-      .populate("assignedTo", "name email")
+      .populate("assignedTo", "name email phone specializations about avatar")
+      .populate("assignedBy", "name phone specializations about avatar")
       .lean();
 
     let tasks = await query.sort({ createdAt: -1 });
@@ -66,7 +78,8 @@ const getSiteTask = async (req, res) => {
   try {
     const task = await SiteTask.findById(req.params.id)
       .populate("project", "name")
-      .populate("assignedTo", "name email");
+      .populate("assignedTo", "name email phone specializations about avatar")
+      .populate("assignedBy", "name phone specializations about avatar");
     if (!task) return res.status(404).json({ message: "Site Task not found" });
     res.json(task);
   } catch (err) {
@@ -82,6 +95,7 @@ const createSiteTask = async (req, res) => {
       else if (req.body.status === 'Critical' || req.body.status === 'Delayed') req.body.progress = 25;
       else req.body.progress = 0;
     }
+    req.body.assignedBy = req.user._id;
     const task = await SiteTask.create(req.body);
     await recalculateProjectProgress(task.project);
     

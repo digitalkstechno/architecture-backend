@@ -6,6 +6,7 @@ const officeTaskSchema = new mongoose.Schema(
     project: { type: mongoose.Schema.Types.ObjectId, ref: "Project", required: true },
     category: { type: String, enum: ["Civil", "Interior"], required: true },
     assignedTo: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    assignedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     status: { type: String, enum: ["Pending", "In Progress", "Completed"], default: "Pending" },
     progress: { type: Number, default: 0, min: 0, max: 100 },
     startDate: { type: String },

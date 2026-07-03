@@ -13,6 +13,8 @@ const userSchema = new mongoose.Schema(
     },
     phone: { type: String },
     address: { type: String },
+    about: { type: String },
+    avatar: { type: String },
     experience: { type: Number },
     specializations: [{ type: String }],
     team: { type: String, enum: ["Office", "Site"] },

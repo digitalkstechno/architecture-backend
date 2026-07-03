@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const { uploadToExternalAPI } = require("../middleware/upload");
 
 const CryptoJS = require("crypto-js");
 const SECRET_KEY = process.env.JWT_SECRET || "fallback_secret";
@@ -83,4 +84,26 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = { getUsers, getUser, updateUser, deleteUser };
+const uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+    
+    const fileUrl = await uploadToExternalAPI(req.file, "architect", "avatars");
+    if (!fileUrl) {
+      return res.status(500).json({ message: "Failed to upload avatar to storage" });
+    }
+
+    const user = await User.findByIdAndUpdate(req.params.id, { avatar: fileUrl }, { new: true });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const u = user.toObject();
+    u.password = decryptPassword(u.password);
+    res.json(u);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = { getUsers, getUser, updateUser, deleteUser, uploadAvatar };

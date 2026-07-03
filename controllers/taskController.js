@@ -6,9 +6,26 @@ const getTasks = async (req, res) => {
     const { project } = req.query;
     const filter = project ? { project } : {};
 
+    const userRole = req.user && req.user.role ? (req.user.role.name || req.user.role).toLowerCase() : 'guest';
+    const isAdminOrDirector = ['admin', 'director', 'architect'].includes(userRole);
+    if (!isAdminOrDirector) {
+      if (userRole === 'project manager') {
+        const Project = require("../models/Project");
+        const managedProjects = await Project.find({ projectManager: req.user._id }).select("_id");
+        const projectIds = managedProjects.map(p => p._id);
+        
+        filter.$or = [
+          { assignedTo: req.user._id },
+          { project: { $in: projectIds } }
+        ];
+      } else {
+        filter.assignedTo = req.user._id;
+      }
+    }
+
     const [siteTasks, officeTasks] = await Promise.all([
-      SiteTask.find(filter).populate("project", "name").populate("assignedTo", "name"),
-      OfficeTask.find(filter).populate("project", "name").populate("assignedTo", "name"),
+      SiteTask.find(filter).populate("project", "name").populate("assignedTo", "name email phone specializations about avatar").populate("assignedBy", "name phone specializations about avatar"),
+      OfficeTask.find(filter).populate("project", "name").populate("assignedTo", "name email phone specializations about avatar").populate("assignedBy", "name phone specializations about avatar"),
     ]);
 
     const mapped = [

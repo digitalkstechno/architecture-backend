@@ -23,7 +23,7 @@ const getDashboardStats = async (req, res) => {
         $or: [
           { workers: req.user._id },
           { supervisor: req.user._id },
-          { designer: req.user._id }
+          { projectManager: req.user._id }
         ]
       };
       officeTaskFilter = { assignedTo: req.user._id };

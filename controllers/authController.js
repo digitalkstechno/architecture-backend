@@ -23,6 +23,8 @@ const register = async (req, res) => {
       team: populatedUser.team,
       trackAttendance: populatedUser.trackAttendance,
       config: populatedUser.config,
+      avatar: populatedUser.avatar,
+      phone: populatedUser.phone,
       token: generateToken(populatedUser._id),
     });
   } catch (err) {
@@ -46,6 +48,8 @@ const login = async (req, res) => {
       team: user.team,
       trackAttendance: user.trackAttendance,
       config: user.config,
+      avatar: user.avatar,
+      phone: user.phone,
       token: generateToken(user._id),
     });
   } catch (err) {

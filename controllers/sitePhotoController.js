@@ -4,7 +4,38 @@ const { uploadToExternalAPI, deleteFromExternalAPI } = require("../middleware/up
 const getSitePhotos = async (req, res) => {
   try {
     const { project } = req.query;
-    const filter = project ? { project } : {};
+    let filter = project ? { project } : {};
+
+    const userRole = req.user && req.user.role ? (req.user.role.name || req.user.role).toLowerCase() : 'guest';
+    const isAdminOrDirector = ['admin', 'director', 'architect'].includes(userRole);
+    
+    if (!isAdminOrDirector) {
+      const Project = require("../models/Project");
+      
+      if (userRole === 'project manager') {
+        const managedProjects = await Project.find({ projectManager: req.user._id }).select("_id");
+        const projectIds = managedProjects.map(p => p._id);
+        
+        filter.$or = [
+          { uploadedBy: req.user._id },
+          { project: { $in: projectIds } }
+        ];
+      } else {
+        // Staff see photos for projects they are assigned to
+        const userProjects = await Project.find({
+          $or: [
+            { workers: req.user._id },
+            { supervisor: req.user._id }
+          ]
+        }).select("_id");
+        const projectIds = userProjects.map(p => p._id);
+        
+        filter.$or = [
+          { uploadedBy: req.user._id },
+          { project: { $in: projectIds } }
+        ];
+      }
+    }
     const photos = await SitePhoto.find(filter)
       .populate("project", "name")
       .populate("uploadedBy", "name")

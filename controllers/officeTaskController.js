@@ -15,14 +15,26 @@ const getOfficeTasks = async (req, res) => {
     const userRole = req.user && req.user.role ? (req.user.role.name || req.user.role).toLowerCase() : 'guest';
     const isAdminOrDirector = ['admin', 'director', 'architect'].includes(userRole);
     if (!isAdminOrDirector) {
-      filter.assignedTo = req.user._id;
+      if (userRole === 'project manager') {
+        const Project = require("../models/Project");
+        const managedProjects = await Project.find({ projectManager: req.user._id }).select("_id");
+        const projectIds = managedProjects.map(p => p._id);
+        
+        filter.$or = [
+          { assignedTo: req.user._id },
+          { project: { $in: projectIds } }
+        ];
+      } else {
+        filter.assignedTo = req.user._id;
+      }
     } else if (assignedTo) {
       filter.assignedTo = assignedTo;
     }
     
     let query = OfficeTask.find(filter)
       .populate("project", "name")
-      .populate("assignedTo", "name email")
+      .populate("assignedTo", "name email phone specializations about avatar")
+      .populate("assignedBy", "name phone specializations about avatar")
       .lean();
 
     let tasks = await query.sort({ createdAt: -1 });
@@ -65,7 +77,8 @@ const getOfficeTask = async (req, res) => {
   try {
     const task = await OfficeTask.findById(req.params.id)
       .populate("project", "name")
-      .populate("assignedTo", "name email");
+      .populate("assignedTo", "name email phone specializations about avatar")
+      .populate("assignedBy", "name phone specializations about avatar");
     if (!task) return res.status(404).json({ message: "Office Task not found" });
     res.json(task);
   } catch (err) {
@@ -80,6 +93,7 @@ const createOfficeTask = async (req, res) => {
       else if (req.body.status === 'In Progress') req.body.progress = 50;
       else if (req.body.status === 'Pending') req.body.progress = 0;
     }
+    req.body.assignedBy = req.user._id;
     const task = await OfficeTask.create(req.body);
     await recalculateProjectProgress(task.project);
     

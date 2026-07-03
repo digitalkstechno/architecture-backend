@@ -17,7 +17,7 @@ const projectSchema = new mongoose.Schema(
     budget: { type: Number, default: 0 }, 
     received: { type: Number, default: 0 },
     pending: { type: Number, default: 0 },
-    designer: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    projectManager: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     supervisor: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     workers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     stages: [stageSchema],
