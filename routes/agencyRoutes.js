@@ -6,6 +6,7 @@ const {
   getRegistrationById,
   approveRegistration,
   rejectRegistration,
+  deleteRegistration,
   sendEmailOtp,
   verifyEmailOtp,
   getAgencyRoles
@@ -21,5 +22,6 @@ router.get("/pending", protect, authorize("architect", "director", "admin"), get
 router.get("/:id", protect, authorize("architect", "director", "admin"), getRegistrationById);
 router.post("/:id/approve", protect, authorize("architect", "director", "admin"), approveRegistration);
 router.post("/:id/reject", protect, authorize("architect", "director", "admin"), rejectRegistration);
+router.delete("/:id", protect, authorize("architect", "director", "admin"), deleteRegistration);
 
 module.exports = router;

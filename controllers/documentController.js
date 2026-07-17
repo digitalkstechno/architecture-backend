@@ -1,5 +1,6 @@
 const Document = require("../models/Document");
 const { uploadToExternalAPI, deleteFromExternalAPI } = require("../middleware/upload");
+const axios = require("axios");
 
 const getDocuments = async (req, res) => {
   try {
@@ -54,7 +55,25 @@ const downloadDocument = async (req, res) => {
       ? doc.fileUrl.replace('/upload/', '/upload/fl_attachment/')
       : doc.fileUrl;
       
-    res.redirect(downloadUrl);
+    try {
+      const response = await axios({
+        method: 'GET',
+        url: downloadUrl,
+        responseType: 'stream'
+      });
+      
+      const ext = downloadUrl.split('.').pop() || 'pdf';
+      const safeTitle = (doc.title || 'document').replace(/[^a-zA-Z0-9-_\s]/g, '').trim().replace(/\s+/g, '_');
+      const filename = `${safeTitle}.${ext}`;
+
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Type', response.headers['content-type']);
+      
+      response.data.pipe(res);
+    } catch (fetchError) {
+      console.error('Download stream error:', fetchError.message);
+      res.redirect(downloadUrl);
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

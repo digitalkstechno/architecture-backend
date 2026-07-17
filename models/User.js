@@ -25,6 +25,12 @@ const userSchema = new mongoose.Schema(
       hoursPerDay: { type: Number, default: 8 },
       daysPerMonth: { type: Number, default: 26 }
     },
+    salaryHistory: [
+      {
+        month: { type: String, required: true }, // Format: 'YYYY-MM'
+        amount: { type: Number, required: true }
+      }
+    ],
     trackAttendance: { type: Boolean, default: false },
     lastMonthDue: { type: Number, default: 0 },
     joinDate: { type: String },

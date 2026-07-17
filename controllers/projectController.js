@@ -1,4 +1,5 @@
 const Project = require("../models/Project");
+const User = require("../models/User");
 
 // GET /api/projects
 const getProjects = async (req, res) => {
@@ -7,10 +8,18 @@ const getProjects = async (req, res) => {
     let filter = {};
 
     if (search) {
+      const matchingUsers = await User.find({ name: { $regex: search, $options: "i" } }).select('_id');
+      const userIds = matchingUsers.map(u => u._id);
+
       filter.$or = [
         { name: { $regex: search, $options: "i" } },
         { location: { $regex: search, $options: "i" } }
       ];
+
+      if (userIds.length > 0) {
+        filter.$or.push({ client: { $in: userIds } });
+        filter.$or.push({ projectManager: { $in: userIds } });
+      }
     }
 
     const userRole = req.user && req.user.role ? (req.user.role.name || req.user.role).toLowerCase() : 'guest';

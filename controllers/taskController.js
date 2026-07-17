@@ -18,6 +18,12 @@ const getTasks = async (req, res) => {
           { assignedTo: req.user._id },
           { project: { $in: projectIds } }
         ];
+      } else if (userRole === 'client') {
+        const Project = require("../models/Project");
+        const clientProjects = await Project.find({ client: req.user._id }).select("_id");
+        const projectIds = clientProjects.map(p => p._id);
+        
+        filter.project = { $in: projectIds };
       } else {
         filter.assignedTo = req.user._id;
       }

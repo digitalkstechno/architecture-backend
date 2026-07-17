@@ -270,6 +270,17 @@ const rejectRegistration = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+const deleteRegistration = async (req, res) => {
+  try {
+    const registration = await AgencyRegistration.findByIdAndDelete(req.params.id);
+    if (!registration) {
+      return res.status(404).json({ message: "Registration not found" });
+    }
+    res.json({ message: "Registration deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 module.exports = {
   submitRegistration,
@@ -277,6 +288,7 @@ module.exports = {
   getRegistrationById,
   approveRegistration,
   rejectRegistration,
+  deleteRegistration,
   sendEmailOtp,
   verifyEmailOtp,
   getAgencyRoles

@@ -24,6 +24,12 @@ const getSiteTasks = async (req, res) => {
           { assignedTo: req.user._id },
           { project: { $in: projectIds } }
         ];
+      } else if (userRole === 'client') {
+        const Project = require("../models/Project");
+        const clientProjects = await Project.find({ client: req.user._id }).select("_id");
+        const projectIds = clientProjects.map(p => p._id);
+        
+        filter.project = { $in: projectIds };
       } else {
         filter.assignedTo = req.user._id;
       }
@@ -40,7 +46,32 @@ const getSiteTasks = async (req, res) => {
     let tasks = await query.sort({ createdAt: -1 });
 
     const statusOrder = { "Pending": 1, "In Progress": 2, "Completed": 3, "Critical": 0, "Delayed": 0, "On Track": 2 };
-    tasks.sort((a, b) => (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99));
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    tasks.sort((a, b) => {
+      const statusDiff = (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99);
+      if (statusDiff !== 0) return statusDiff;
+
+      // If status is same, sort by closest end date to today
+      if (a.endDate && b.endDate) {
+        const dateA = new Date(a.endDate);
+        dateA.setHours(0, 0, 0, 0);
+        const diffA = Math.abs(dateA - today);
+
+        const dateB = new Date(b.endDate);
+        dateB.setHours(0, 0, 0, 0);
+        const diffB = Math.abs(dateB - today);
+
+        return diffA - diffB;
+      } else if (a.endDate) {
+        return -1;
+      } else if (b.endDate) {
+        return 1;
+      }
+      return 0;
+    });
 
     const mappedTasks = tasks.map(task => {
       if (task.progress === 0 || task.progress == null) {
