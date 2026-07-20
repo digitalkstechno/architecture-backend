@@ -282,6 +282,19 @@ const deleteRegistration = async (req, res) => {
   }
 };
 
+const getRegistrationByUserId = async (req, res) => {
+  try {
+    const registration = await AgencyRegistration.findOne({ userId: req.params.userId })
+      .populate("businessType", "name");
+    if (!registration) {
+      return res.status(404).json({ message: "Registration not found for this user" });
+    }
+    res.json(registration);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   submitRegistration,
   getPendingRegistrations,
@@ -291,5 +304,6 @@ module.exports = {
   deleteRegistration,
   sendEmailOtp,
   verifyEmailOtp,
-  getAgencyRoles
+  getAgencyRoles,
+  getRegistrationByUserId
 };
