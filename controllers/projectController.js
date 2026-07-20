@@ -47,7 +47,7 @@ const getProjects = async (req, res) => {
 
     let projects = await query.sort({ createdAt: -1 });
 
-    const statusOrder = { "Pending": 1, "In Progress": 2, "Completed": 3, "Critical": 0, "Delayed": 0, "On Track": 2 };
+    const statusOrder = { "Planned": 1, "In Progress": 2, "Completed": 3, "On Hold": 4 };
     projects.sort((a, b) => (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99));
 
     const totalItems = projects.length;
@@ -58,17 +58,21 @@ const getProjects = async (req, res) => {
       const limitNum = parseInt(limit);
       paginatedProjects = projects.slice((pageNum - 1) * limitNum, pageNum * limitNum);
 
-      return res.json({
-        data: paginatedProjects,
-        total: totalItems,
-        page: pageNum,
-        totalPages: Math.ceil(totalItems / limitNum)
+      return res.status(200).json({
+        success: true,
+        status: 200,
+        data: {
+          data: paginatedProjects,
+          total: totalItems,
+          page: pageNum,
+          totalPages: Math.ceil(totalItems / limitNum)
+        }
       });
     }
 
-    res.json(paginatedProjects);
+    res.status(200).json({ success: true, status: 200, data: paginatedProjects });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ success: false, status: 500, message: err.message });
   }
 };
 
@@ -80,10 +84,10 @@ const getProject = async (req, res) => {
       .populate("projectManager", "name email phone specializations about avatar")
       .populate("supervisor", "name email phone specializations about avatar")
       .populate("workers", "name email role phone specializations about avatar");
-    if (!project) return res.status(404).json({ message: "Project not found" });
-    res.json(project);
+    if (!project) return res.status(404).json({ success: false, status: 404, message: "Project not found" });
+    res.status(200).json({ success: true, status: 200, data: project });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ success: false, status: 500, message: err.message });
   }
 };
 
@@ -91,9 +95,9 @@ const getProject = async (req, res) => {
 const createProject = async (req, res) => {
   try {
     const project = await Project.create(req.body);
-    res.status(201).json(project);
+    res.status(201).json({ success: true, status: 201, data: project });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({ success: false, status: 400, message: err.message });
   }
 };
 
@@ -101,10 +105,10 @@ const createProject = async (req, res) => {
 const updateProject = async (req, res) => {
   try {
     const project = await Project.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-    if (!project) return res.status(404).json({ message: "Project not found" });
-    res.json(project);
+    if (!project) return res.status(404).json({ success: false, status: 404, message: "Project not found" });
+    res.status(200).json({ success: true, status: 200, data: project });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({ success: false, status: 400, message: err.message });
   }
 };
 
@@ -112,10 +116,10 @@ const updateProject = async (req, res) => {
 const deleteProject = async (req, res) => {
   try {
     const project = await Project.findByIdAndDelete(req.params.id);
-    if (!project) return res.status(404).json({ message: "Project not found" });
-    res.json({ message: "Project deleted" });
+    if (!project) return res.status(404).json({ success: false, status: 404, message: "Project not found" });
+    res.status(200).json({ success: true, status: 200, data: { message: "Project deleted" } });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ success: false, status: 500, message: err.message });
   }
 };
 
@@ -124,16 +128,16 @@ const updateStage = async (req, res) => {
   try {
     const { stageName, status } = req.body;
     const project = await Project.findById(req.params.id);
-    if (!project) return res.status(404).json({ message: "Project not found" });
+    if (!project) return res.status(404).json({ success: false, status: 404, message: "Project not found" });
 
     const stage = project.stages.find((s) => s.name === stageName);
-    if (!stage) return res.status(404).json({ message: "Stage not found" });
+    if (!stage) return res.status(404).json({ success: false, status: 404, message: "Stage not found" });
 
     stage.status = status;
     await project.save();
-    res.json(project);
+    res.status(200).json({ success: true, status: 200, data: project });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({ success: false, status: 400, message: err.message });
   }
 };
 

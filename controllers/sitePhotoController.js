@@ -40,16 +40,28 @@ const getSitePhotos = async (req, res) => {
       .populate("project", "name")
       .populate("uploadedBy", "name")
       .sort({ createdAt: -1 });
-    res.json(photos);
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: photos
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 
 const uploadSitePhoto = async (req, res) => {
   try {
     const files = req.files?.length ? req.files : req.file ? [req.file] : [];
-    if (!files.length) return res.status(400).json({ message: "No file uploaded" });
+    if (!files.length) return res.status(400).json({
+      success: false,
+      status: 400,
+      message: "No file uploaded"
+    });
 
     const photos = await Promise.all(
       files.map(async (file) => {
@@ -66,23 +78,43 @@ const uploadSitePhoto = async (req, res) => {
       })
     );
 
-    res.status(201).json(photos.length === 1 ? photos[0] : photos);
+    res.status(201).json({
+      success: true,
+      status: 201,
+      data: photos.length === 1 ? photos[0] : photos
+    });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({
+      success: false,
+      status: 400,
+      message: err.message
+    });
   }
 };
 
 const deleteSitePhoto = async (req, res) => {
   try {
     const photo = await SitePhoto.findById(req.params.id);
-    if (!photo) return res.status(404).json({ message: "Photo not found" });
+    if (!photo) return res.status(404).json({
+      success: false,
+      status: 404,
+      message: "Photo not found"
+    });
 
     await deleteFromExternalAPI(photo.fileUrl);
     await photo.deleteOne();
 
-    res.json({ message: "Photo deleted" });
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: { message: "Photo deleted" }
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 

@@ -25,9 +25,17 @@ const getAttendance = async (req, res) => {
       records = records.filter(r => r.user && r.user.team === team);
     }
 
-    res.json(records);
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: records
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 
@@ -50,7 +58,11 @@ const checkIn = async (req, res) => {
       // Check if last log is not closed
       const lastLog = attendance.logs[attendance.logs.length - 1];
       if (lastLog && !lastLog.checkOut) {
-        return res.status(400).json({ message: "Already checked in" });
+        return res.status(400).json({
+          success: false,
+          status: 400,
+          message: "Already checked in"
+        });
       }
       attendance.logs.push({ checkIn: new Date() });
       attendance.status = "Present";
@@ -58,9 +70,17 @@ const checkIn = async (req, res) => {
     }
     
     await attendance.save();
-    res.json(attendance);
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: attendance
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 
@@ -70,11 +90,19 @@ const checkOut = async (req, res) => {
     const today = new Date().toISOString().split("T")[0];
     
     const attendance = await Attendance.findOne({ user: userId, date: today });
-    if (!attendance) return res.status(404).json({ message: "No attendance record for today" });
+    if (!attendance) return res.status(404).json({
+      success: false,
+      status: 404,
+      message: "No attendance record for today"
+    });
     
     const lastLog = attendance.logs[attendance.logs.length - 1];
     if (!lastLog || lastLog.checkOut) {
-      return res.status(400).json({ message: "Not checked in or already checked out" });
+      return res.status(400).json({
+        success: false,
+        status: 400,
+        message: "Not checked in or already checked out"
+      });
     }
     
     lastLog.checkOut = new Date();
@@ -84,9 +112,17 @@ const checkOut = async (req, res) => {
     attendance.isManual = false;
     
     await attendance.save();
-    res.json(attendance);
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: attendance
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 
@@ -109,10 +145,22 @@ const updateAttendance = async (req, res) => {
       record = await Attendance.findByIdAndUpdate(id, { ...req.body, isManual: true }, { new: true });
     }
 
-    if (!record) return res.status(404).json({ message: "Attendance record not found" });
-    res.json(record);
+    if (!record) return res.status(404).json({
+      success: false,
+      status: 404,
+      message: "Attendance record not found"
+    });
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: record
+    });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({
+      success: false,
+      status: 400,
+      message: err.message
+    });
   }
 };
 
@@ -131,9 +179,17 @@ const getMyStatus = async (req, res) => {
       }).sort({ date: -1 });
     }
     
-    res.json(attendance);
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: attendance
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 
@@ -143,7 +199,11 @@ const downloadSalarySlip = async (req, res) => {
     const { month, present = 0, absent = 0, halfDay = 0, salary = 0, overtime = 0, total = 0 } = req.query;
 
     const staff = await User.findById(staffId).populate("role", "name");
-    if (!staff) return res.status(404).json({ message: "Staff not found" });
+    if (!staff) return res.status(404).json({
+      success: false,
+      status: 404,
+      message: "Staff not found"
+    });
 
     const doc = new PDFDocument({ margin: 50, size: 'A4' });
     
@@ -251,7 +311,11 @@ const downloadSalarySlip = async (req, res) => {
     
     doc.end();
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 

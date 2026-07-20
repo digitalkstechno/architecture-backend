@@ -90,17 +90,30 @@ const getOfficeTasks = async (req, res) => {
       const limitNum = parseInt(limit);
       paginatedTasks = mappedTasks.slice((pageNum - 1) * limitNum, pageNum * limitNum);
 
-      return res.json({
-        data: paginatedTasks,
-        total: totalItems,
-        page: pageNum,
-        totalPages: Math.ceil(totalItems / limitNum)
+      return res.status(200).json({
+        success: true,
+        status: 200,
+
+        data: {
+          data: paginatedTasks,
+          total: totalItems,
+          page: pageNum,
+          totalPages: Math.ceil(totalItems / limitNum)
+        }
       });
     }
 
-    res.json(paginatedTasks);
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: paginatedTasks
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 
@@ -110,10 +123,22 @@ const getOfficeTask = async (req, res) => {
       .populate("project", "name")
       .populate("assignedTo", "name email phone specializations about avatar")
       .populate("assignedBy", "name phone specializations about avatar");
-    if (!task) return res.status(404).json({ message: "Office Task not found" });
-    res.json(task);
+    if (!task) return res.status(404).json({
+      success: false,
+      status: 404,
+      message: "Office Task not found"
+    });
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: task
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 
@@ -132,9 +157,17 @@ const createOfficeTask = async (req, res) => {
       await sendNotification(task.assignedTo, `New Office Task assigned: ${task.title}`, 'task_assigned', task._id);
     }
 
-    res.status(201).json(task);
+    res.status(201).json({
+      success: true,
+      status: 201,
+      data: task
+    });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({
+      success: false,
+      status: 400,
+      message: err.message
+    });
   }
 };
 
@@ -146,37 +179,69 @@ const updateOfficeTask = async (req, res) => {
       else if (req.body.status === 'Pending') req.body.progress = 0;
     }
     const task = await OfficeTask.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-    if (!task) return res.status(404).json({ message: "Office Task not found" });
+    if (!task) return res.status(404).json({
+      success: false,
+      status: 404,
+      message: "Office Task not found"
+    });
     await recalculateProjectProgress(task.project);
     
     if (req.body.status && req.body.status !== 'Pending') {
       await notifyDirectors(`Office Task "${task.title}" is now ${req.body.status}`, 'task_completed', task._id);
     }
     
-    res.json(task);
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: task
+    });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({
+      success: false,
+      status: 400,
+      message: err.message
+    });
   }
 };
 
 const deleteOfficeTask = async (req, res) => {
   try {
     const task = await OfficeTask.findByIdAndDelete(req.params.id);
-    if (!task) return res.status(404).json({ message: "Office Task not found" });
+    if (!task) return res.status(404).json({
+      success: false,
+      status: 404,
+      message: "Office Task not found"
+    });
     await recalculateProjectProgress(task.project);
-    res.json({ message: "Office Task deleted" });
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: { message: "Office Task deleted" }
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 
 const uploadOfficeTaskImages = async (req, res) => {
   try {
     const task = await OfficeTask.findById(req.params.id);
-    if (!task) return res.status(404).json({ message: "Office Task not found" });
+    if (!task) return res.status(404).json({
+      success: false,
+      status: 404,
+      message: "Office Task not found"
+    });
 
     if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ message: "No files uploaded" });
+      return res.status(400).json({
+        success: false,
+        status: 400,
+        message: "No files uploaded"
+      });
     }
 
     const uploadPromises = req.files.map(file => uploadToExternalAPI(file, 'architect', 'office-tasks'));
@@ -186,22 +251,42 @@ const uploadOfficeTaskImages = async (req, res) => {
     task.images = [...(task.images || []), ...validUrls];
     await task.save();
 
-    res.json(task);
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: task
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 
 const deleteOfficeTaskImage = async (req, res) => {
   try {
     const task = await OfficeTask.findById(req.params.id);
-    if (!task) return res.status(404).json({ message: "Office Task not found" });
+    if (!task) return res.status(404).json({
+      success: false,
+      status: 404,
+      message: "Office Task not found"
+    });
     const { imageUrl } = req.body;
     task.images = (task.images || []).filter(img => img !== imageUrl);
     await task.save();
-    res.json(task);
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: task
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 

@@ -6,9 +6,17 @@ const getCompany = async (req, res) => {
     if (!company) {
       company = await Company.create({});
     }
-    res.json(company);
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: company
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 
@@ -19,9 +27,17 @@ const updateCompany = async (req, res) => {
       company = await Company.create({});
     }
     company = await Company.findByIdAndUpdate(company._id, req.body, { new: true, runValidators: true });
-    res.json(company);
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: company
+    });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({
+      success: false,
+      status: 400,
+      message: err.message
+    });
   }
 };
 

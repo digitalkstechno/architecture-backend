@@ -32,9 +32,17 @@ const getPayments = async (req, res) => {
       .populate("project", "name")
       .populate("client", "name")
       .sort({ createdAt: -1 });
-    res.json(payments);
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: payments
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 
@@ -43,17 +51,33 @@ const getPayment = async (req, res) => {
     const payment = await Payment.findById(req.params.id)
       .populate("project", "name")
       .populate("client", "name email");
-    if (!payment) return res.status(404).json({ message: "Payment not found" });
-    res.json(payment);
+    if (!payment) return res.status(404).json({
+      success: false,
+      status: 404,
+      message: "Payment not found"
+    });
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: payment
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 
 const createPayment = async (req, res) => {
   try {
     const project = await Project.findById(req.body.project || req.body.projectId);
-    if (!project) return res.status(404).json({ message: "Project not found" });
+    if (!project) return res.status(404).json({
+      success: false,
+      status: 404,
+      message: "Project not found"
+    });
 
     const budgetValue = typeof project.budget === 'number' ? project.budget : Number(String(project.budget).replace(/[^0-9.-]+/g, "")) || 0;
     const existingPayments = await Payment.find({ project: project._id, status: "Paid" });
@@ -63,21 +87,37 @@ const createPayment = async (req, res) => {
     const maxAllowed = Math.max(0, budgetValue - receivedSoFar);
 
     if (amount > maxAllowed) {
-      return res.status(400).json({ message: `Amount exceeds Pending Balance. Maximum allowed: ₹${maxAllowed}` });
+      return res.status(400).json({
+        success: false,
+        status: 400,
+        message: `Amount exceeds Pending Balance. Maximum allowed: ₹${maxAllowed}`
+      });
     }
 
     const payment = await Payment.create(req.body);
     await updateProjectFinances(payment.project);
-    res.status(201).json(payment);
+    res.status(201).json({
+      success: true,
+      status: 201,
+      data: payment
+    });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({
+      success: false,
+      status: 400,
+      message: err.message
+    });
   }
 };
 
 const updatePayment = async (req, res) => {
   try {
     const paymentToUpdate = await Payment.findById(req.params.id);
-    if (!paymentToUpdate) return res.status(404).json({ message: "Payment not found" });
+    if (!paymentToUpdate) return res.status(404).json({
+      success: false,
+      status: 404,
+      message: "Payment not found"
+    });
 
     const project = await Project.findById(paymentToUpdate.project);
     const budgetValue = typeof project.budget === 'number' ? project.budget : Number(String(project.budget).replace(/[^0-9.-]+/g, "")) || 0;
@@ -93,25 +133,49 @@ const updatePayment = async (req, res) => {
     const maxAllowed = Math.max(0, budgetValue - receivedSoFar);
 
     if (newAmount > maxAllowed) {
-      return res.status(400).json({ message: `Amount exceeds Pending Balance. Maximum allowed: ₹${maxAllowed}` });
+      return res.status(400).json({
+        success: false,
+        status: 400,
+        message: `Amount exceeds Pending Balance. Maximum allowed: ₹${maxAllowed}`
+      });
     }
 
     const payment = await Payment.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
     await updateProjectFinances(payment.project);
-    res.json(payment);
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: payment
+    });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({
+      success: false,
+      status: 400,
+      message: err.message
+    });
   }
 };
 
 const deletePayment = async (req, res) => {
   try {
     const payment = await Payment.findByIdAndDelete(req.params.id);
-    if (!payment) return res.status(404).json({ message: "Payment not found" });
+    if (!payment) return res.status(404).json({
+      success: false,
+      status: 404,
+      message: "Payment not found"
+    });
     await updateProjectFinances(payment.project);
-    res.json({ message: "Payment deleted" });
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: { message: "Payment deleted" }
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 
@@ -121,7 +185,11 @@ const downloadPaymentSlip = async (req, res) => {
       .populate("project", "name client")
       .populate("client", "name email");
 
-    if (!payment) return res.status(404).json({ message: "Payment not found" });
+    if (!payment) return res.status(404).json({
+      success: false,
+      status: 404,
+      message: "Payment not found"
+    });
 
     // Create a new PDF Document
     const doc = new PDFDocument({ margin: 50, size: 'A4' });
@@ -154,7 +222,7 @@ const downloadPaymentSlip = async (req, res) => {
       
     // Company Name in Header
     const Company = require("../models/Company");
-    const company = await Company.findOne() || { name: "Arkiton Pro Designs" };
+    const company = (await Company.findOne()) || { name: "Arkiton Pro Designs" };
     
     doc
       .fontSize(12)
@@ -244,7 +312,11 @@ const downloadPaymentSlip = async (req, res) => {
     // Finalize PDF file
     doc.end();
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 

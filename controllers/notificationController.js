@@ -6,9 +6,17 @@ const getNotifications = async (req, res) => {
     const notifications = await Notification.find({ recipient: req.user._id })
       .sort({ createdAt: -1 })
       .limit(50);
-    res.json(notifications);
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: notifications
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 
@@ -20,10 +28,22 @@ const markAsRead = async (req, res) => {
       { isRead: true },
       { new: true }
     );
-    if (!notification) return res.status(404).json({ message: "Notification not found" });
-    res.json(notification);
+    if (!notification) return res.status(404).json({
+      success: false,
+      status: 404,
+      message: "Notification not found"
+    });
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: notification
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 
@@ -34,9 +54,17 @@ const markAllAsRead = async (req, res) => {
       { recipient: req.user._id, isRead: false },
       { isRead: true }
     );
-    res.json({ message: "All notifications marked as read" });
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: { message: "All notifications marked as read" }
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 

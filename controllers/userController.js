@@ -33,9 +33,17 @@ const getUsers = async (req, res) => {
       u.password = decryptPassword(u.password);
       return u;
     });
-    res.json(usersWithPasswords);
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: usersWithPasswords
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 
@@ -44,13 +52,25 @@ const getUser = async (req, res) => {
     const user = await User.findById(req.params.id)
       .populate("assignedProjects", "name status")
       .populate("role", "name permissions");
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(404).json({
+      success: false,
+      status: 404,
+      message: "User not found"
+    });
     
     const u = user.toObject();
     u.password = decryptPassword(u.password);
-    res.json(u);
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: u
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 
@@ -64,45 +84,89 @@ const updateUser = async (req, res) => {
     }
     
     const user = await User.findByIdAndUpdate(req.params.id, rest, { new: true, runValidators: true });
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(404).json({
+      success: false,
+      status: 404,
+      message: "User not found"
+    });
     
     const u = user.toObject();
     u.password = decryptPassword(u.password);
-    res.json(u);
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: u
+    });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({
+      success: false,
+      status: 400,
+      message: err.message
+    });
   }
 };
 
 const deleteUser = async (req, res) => {
   try {
     const user = await User.findByIdAndDelete(req.params.id);
-    if (!user) return res.status(404).json({ message: "User not found" });
-    res.json({ message: "User deleted" });
+    if (!user) return res.status(404).json({
+      success: false,
+      status: 404,
+      message: "User not found"
+    });
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: { message: "User deleted" }
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 
 const uploadAvatar = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
+      return res.status(400).json({
+        success: false,
+        status: 400,
+        message: "No file uploaded"
+      });
     }
     
     const fileUrl = await uploadToExternalAPI(req.file, "architect", "avatars");
     if (!fileUrl) {
-      return res.status(500).json({ message: "Failed to upload avatar to storage" });
+      return res.status(500).json({
+        success: false,
+        status: 500,
+        message: "Failed to upload avatar to storage"
+      });
     }
 
     const user = await User.findByIdAndUpdate(req.params.id, { avatar: fileUrl }, { new: true });
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(404).json({
+      success: false,
+      status: 404,
+      message: "User not found"
+    });
 
     const u = user.toObject();
     u.password = decryptPassword(u.password);
-    res.json(u);
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: u
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 

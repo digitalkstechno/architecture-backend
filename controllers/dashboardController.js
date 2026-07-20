@@ -75,33 +75,42 @@ const getDashboardStats = async (req, res) => {
     const upcomingOfficeTasks = await OfficeTask.find({ ...officeTaskFilter, status: { $ne: "Completed" } }).populate("project", "name").sort({ startDate: -1 }).limit(5);
     const upcomingSiteTasks = await SiteTask.find({ ...siteTaskFilter, status: { $ne: "Completed" } }).populate("project", "name").sort({ startDate: -1 }).limit(5);
 
-    res.json({
-      projects: {
-        total: totalProjects,
-        active: activeProjects,
-        completed: completedProjects
-      },
-      tasks: {
-        office: { total: totalOfficeTasks, pending: pendingOfficeTasks },
-        site: { total: totalSiteTasks, pending: pendingSiteTasks }
-      },
-      finances: {
-        totalBudget,
-        totalReceived,
-        totalPending,
-        isHidden: !isAdminOrDirector
-      },
-      recentActivity: {
-        messages: recentMessages,
-        siteUpdates: recentSiteUpdates,
-        upcomingOfficeTasks,
-        upcomingSiteTasks,
-        pendingAgencies
+    res.status(200).json({
+      success: true,
+      status: 200,
+
+      data: {
+        projects: {
+          total: totalProjects,
+          active: activeProjects,
+          completed: completedProjects
+        },
+        tasks: {
+          office: { total: totalOfficeTasks, pending: pendingOfficeTasks },
+          site: { total: totalSiteTasks, pending: pendingSiteTasks }
+        },
+        finances: {
+          totalBudget,
+          totalReceived,
+          totalPending,
+          isHidden: !isAdminOrDirector
+        },
+        recentActivity: {
+          messages: recentMessages,
+          siteUpdates: recentSiteUpdates,
+          upcomingOfficeTasks,
+          upcomingSiteTasks,
+          pendingAgencies
+        }
       }
     });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: error.message
+    });
   }
 };
 

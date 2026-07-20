@@ -7,9 +7,18 @@ const { uploadToExternalAPI, deleteFromExternalAPI } = require("../middleware/up
 exports.getSOPs = async (req, res) => {
   try {
     const sops = await WorkingSOP.find().populate("allowedRoles", "name").sort({ createdAt: -1 });
-    res.status(200).json(sops);
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: sops
+    });
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch SOPs", error: error.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: "Failed to fetch SOPs",
+      error: error.message
+    });
   }
 };
 
@@ -27,12 +36,20 @@ exports.createSOP = async (req, res) => {
       if (uploadedUrl) {
         finalVideoUrl = uploadedUrl;
       } else {
-        return res.status(400).json({ message: "Failed to upload video file" });
+        return res.status(400).json({
+          success: false,
+          status: 400,
+          message: "Failed to upload video file"
+        });
       }
     }
 
     if (!finalVideoUrl) {
-      return res.status(400).json({ message: "Video URL or Video File is required" });
+      return res.status(400).json({
+        success: false,
+        status: 400,
+        message: "Video URL or Video File is required"
+      });
     }
 
     const newSOP = await WorkingSOP.create({
@@ -44,9 +61,18 @@ exports.createSOP = async (req, res) => {
 
     const populatedSOP = await WorkingSOP.findById(newSOP._id).populate("allowedRoles", "name");
     
-    res.status(201).json(populatedSOP);
+    res.status(201).json({
+      success: true,
+      status: 201,
+      data: populatedSOP
+    });
   } catch (error) {
-    res.status(500).json({ message: "Failed to create SOP", error: error.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: "Failed to create SOP",
+      error: error.message
+    });
   }
 };
 
@@ -57,7 +83,11 @@ exports.deleteSOP = async (req, res) => {
   try {
     const sop = await WorkingSOP.findById(req.params.id);
     if (!sop) {
-      return res.status(404).json({ message: "SOP not found" });
+      return res.status(404).json({
+        success: false,
+        status: 404,
+        message: "SOP not found"
+      });
     }
 
     // Try to delete external file if it's hosted on our service
@@ -66,9 +96,18 @@ exports.deleteSOP = async (req, res) => {
     }
 
     await sop.deleteOne();
-    res.status(200).json({ message: "SOP deleted successfully" });
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: { message: "SOP deleted successfully" }
+    });
   } catch (error) {
-    res.status(500).json({ message: "Failed to delete SOP", error: error.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: "Failed to delete SOP",
+      error: error.message
+    });
   }
 };
 
@@ -82,7 +121,11 @@ exports.updateSOP = async (req, res) => {
     const sop = await WorkingSOP.findById(id);
 
     if (!sop) {
-      return res.status(404).json({ message: "SOP not found" });
+      return res.status(404).json({
+        success: false,
+        status: 404,
+        message: "SOP not found"
+      });
     }
 
     let finalVideoUrl = videoUrl || sop.videoUrl;
@@ -97,7 +140,11 @@ exports.updateSOP = async (req, res) => {
         }
         finalVideoUrl = uploadedUrl;
       } else {
-        return res.status(400).json({ message: "Failed to upload new video file" });
+        return res.status(400).json({
+          success: false,
+          status: 400,
+          message: "Failed to upload new video file"
+        });
       }
     }
 
@@ -110,8 +157,17 @@ exports.updateSOP = async (req, res) => {
     await sop.save();
     const populatedSOP = await WorkingSOP.findById(sop._id).populate("allowedRoles", "name");
     
-    res.status(200).json(populatedSOP);
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: populatedSOP
+    });
   } catch (error) {
-    res.status(500).json({ message: "Failed to update SOP", error: error.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: "Failed to update SOP",
+      error: error.message
+    });
   }
 };

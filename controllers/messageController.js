@@ -59,9 +59,17 @@ const getConversations = async (req, res) => {
     // remove temp field
     conversations.forEach(c => delete c._latestDate);
 
-    res.json(conversations);
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: conversations
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 
@@ -77,9 +85,17 @@ const getMessagesByContact = async (req, res) => {
       ]
     }).sort({ createdAt: 1 });
 
-    res.json(messages.map(formatMessage));
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: messages.map(formatMessage)
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 
@@ -108,9 +124,17 @@ const sendMessage = async (req, res) => {
       console.warn("Socket not available or error:", socketErr.message);
     }
 
-    res.status(201).json(formattedMessage);
+    res.status(201).json({
+      success: true,
+      status: 201,
+      data: formattedMessage
+    });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({
+      success: false,
+      status: 400,
+      message: err.message
+    });
   }
 };
 
@@ -124,9 +148,17 @@ const markMessagesRead = async (req, res) => {
       { unread: false }
     );
 
-    res.json({ message: "Messages marked as read" });
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: { message: "Messages marked as read" }
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 
@@ -137,11 +169,19 @@ const deleteMessage = async (req, res) => {
 
     const message = await Message.findById(id);
     if (!message) {
-      return res.status(404).json({ message: "Message not found" });
+      return res.status(404).json({
+        success: false,
+        status: 404,
+        message: "Message not found"
+      });
     }
 
     if (message.from.toString() !== userId.toString()) {
-      return res.status(403).json({ message: "Not authorized to delete this message" });
+      return res.status(403).json({
+        success: false,
+        status: 403,
+        message: "Not authorized to delete this message"
+      });
     }
 
     await Message.deleteOne({ _id: id });
@@ -155,9 +195,17 @@ const deleteMessage = async (req, res) => {
       console.warn("Socket not available or error:", socketErr.message);
     }
 
-    res.json({ message: "Message deleted successfully", id });
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: { message: "Message deleted successfully", id }
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 

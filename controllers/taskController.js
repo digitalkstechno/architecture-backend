@@ -39,9 +39,17 @@ const getTasks = async (req, res) => {
       ...officeTasks.map((t) => ({ ...t.toObject(), type: "Office" })),
     ];
 
-    res.json(mapped);
+    res.status(200).json({
+      success: true,
+      status: 200,
+      data: mapped
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({
+      success: false,
+      status: 500,
+      message: err.message
+    });
   }
 };
 
