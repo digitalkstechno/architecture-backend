@@ -1,6 +1,5 @@
 const Message = require("../models/Message");
 const User = require("../models/User");
-const socketUtil = require("../utils/socket");
 
 // Format message for frontend
 const formatMessage = (msg) => ({
@@ -113,16 +112,6 @@ const sendMessage = async (req, res) => {
 
     const formattedMessage = formatMessage(msg);
 
-    // Emit socket event
-    try {
-      const io = socketUtil.getIO();
-      // Emit to receiver
-      io.to(receiverId.toString()).emit("receive_message", formattedMessage);
-      // Emit to sender
-      io.to(senderId.toString()).emit("receive_message", formattedMessage);
-    } catch (socketErr) {
-      console.warn("Socket not available or error:", socketErr.message);
-    }
 
     res.status(201).json({
       success: true,
@@ -186,14 +175,6 @@ const deleteMessage = async (req, res) => {
 
     await Message.deleteOne({ _id: id });
 
-    // Emit socket event
-    try {
-      const io = socketUtil.getIO();
-      io.to(message.to.toString()).emit("delete_message", id);
-      io.to(message.from.toString()).emit("delete_message", id);
-    } catch (socketErr) {
-      console.warn("Socket not available or error:", socketErr.message);
-    }
 
     res.status(200).json({
       success: true,
