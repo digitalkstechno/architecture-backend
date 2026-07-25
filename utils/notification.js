@@ -1,11 +1,9 @@
 const Notification = require("../models/Notification");
 const User = require("../models/User");
 const Role = require("../models/Role");
-const { getIO } = require("./socket");
 
 const sendNotification = async (recipientIds, text, type, relatedId) => {
   try {
-    const io = getIO();
     const ids = Array.isArray(recipientIds) ? recipientIds : [recipientIds];
 
     for (const recipient of ids) {
@@ -18,8 +16,6 @@ const sendNotification = async (recipientIds, text, type, relatedId) => {
         relatedId
       });
 
-      // Emit real-time event to this specific user's room
-      io.to(recipient.toString()).emit("new_notification", notification);
     }
   } catch (error) {
     console.error("Error sending notification:", error);
