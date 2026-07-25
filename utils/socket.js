@@ -7,8 +7,9 @@ module.exports = {
   init: (server) => {
     io = new Server(server, {
       cors: {
-        origin: "*", // Adjust for production
-        methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+        origin: true,
+        methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+        credentials: true
       }
     });
 

@@ -40,7 +40,10 @@ const server = http.createServer(app);
 // Initialize Socket.io
 const io = require("./utils/socket").init(server);
 
-app.use(cors());
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
 app.use(express.json());
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
