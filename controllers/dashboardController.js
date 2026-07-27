@@ -72,8 +72,50 @@ const getDashboardStats = async (req, res) => {
       .limit(10);
     
     // 5. Recent Tasks (for schedules)
-    const upcomingOfficeTasks = await OfficeTask.find({ ...officeTaskFilter, status: { $ne: "Completed" } }).populate("project", "name").sort({ startDate: -1 }).limit(5);
-    const upcomingSiteTasks = await SiteTask.find({ ...siteTaskFilter, status: { $ne: "Completed" } }).populate("project", "name").sort({ startDate: -1 }).limit(5);
+    let upcomingOfficeTasks = await OfficeTask.find({ ...officeTaskFilter, status: { $ne: "Completed" } }).populate("project", "name").lean();
+    let upcomingSiteTasks = await SiteTask.find({ ...siteTaskFilter, status: { $ne: "Completed" } }).populate("project", "name").lean();
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const sortByEndDate = (a, b) => {
+      if (a.endDate && b.endDate) {
+        const dateA = new Date(a.endDate);
+        dateA.setHours(0, 0, 0, 0);
+        const diffA = Math.abs(dateA - today);
+
+        const dateB = new Date(b.endDate);
+        dateB.setHours(0, 0, 0, 0);
+        const diffB = Math.abs(dateB - today);
+
+        return diffA - diffB;
+      } else if (a.endDate) {
+        return -1;
+      } else if (b.endDate) {
+        return 1;
+      }
+      return 0;
+    };
+
+    upcomingOfficeTasks.sort(sortByEndDate);
+    upcomingSiteTasks.sort((a, b) => {
+      const aDate = a.endDate || a.startDate;
+      const bDate = b.endDate || b.startDate;
+      if (aDate && bDate) {
+        const dateA = new Date(aDate);
+        dateA.setHours(0, 0, 0, 0);
+        const diffA = Math.abs(dateA - today);
+        const dateB = new Date(bDate);
+        dateB.setHours(0, 0, 0, 0);
+        const diffB = Math.abs(dateB - today);
+        return diffA - diffB;
+      } else if (aDate) {
+        return -1;
+      } else if (bDate) {
+        return 1;
+      }
+      return 0;
+    });
 
     res.status(200).json({
       success: true,
