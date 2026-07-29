@@ -20,7 +20,7 @@ const getUsers = async (req, res) => {
     const { role, team, trackAttendance } = req.query;
     const filter = {};
     if (role) filter.role = role;
-    if (team) filter.team = team;
+    if (team) filter.team = { $regex: new RegExp(`^${team}$`, "i") };
     if (trackAttendance !== undefined) filter.trackAttendance = trackAttendance === "true";
 
     const users = await User.find(filter)

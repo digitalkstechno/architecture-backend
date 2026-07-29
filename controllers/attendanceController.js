@@ -3,6 +3,14 @@ const User = require("../models/User");
 const PDFDocument = require("pdfkit");
 const path = require("path");
 
+const getLocalDateString = () => {
+  const date = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"}));
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const getAttendance = async (req, res) => {
   try {
     const { user, date, startDate, endDate, team } = req.query;
@@ -22,7 +30,7 @@ const getAttendance = async (req, res) => {
       .sort({ date: -1 });
 
     if (team) {
-      records = records.filter(r => r.user && r.user.team === team);
+      records = records.filter(r => r.user && r.user.team && r.user.team.toLowerCase() === team.toLowerCase());
     }
 
     res.status(200).json({
@@ -42,7 +50,7 @@ const getAttendance = async (req, res) => {
 const checkIn = async (req, res) => {
   try {
     const userId = req.user.id;
-    const today = new Date().toISOString().split("T")[0];
+    const today = getLocalDateString();
     
     let attendance = await Attendance.findOne({ user: userId, date: today });
     
@@ -64,6 +72,23 @@ const checkIn = async (req, res) => {
           message: "Already checked in"
         });
       }
+      
+      if (lastLog && lastLog.checkOut) {
+        const timeSinceCheckOut = new Date() - lastLog.checkOut;
+        if (timeSinceCheckOut < 60000) { // 60 seconds grace period for page refresh
+          lastLog.checkOut = undefined;
+          lastLog.duration = undefined;
+          attendance.status = "Present";
+          attendance.isManual = false;
+          await attendance.save();
+          return res.status(200).json({
+            success: true,
+            status: 200,
+            data: attendance
+          });
+        }
+      }
+
       attendance.logs.push({ checkIn: new Date() });
       attendance.status = "Present";
       attendance.isManual = false;
@@ -87,13 +112,22 @@ const checkIn = async (req, res) => {
 const checkOut = async (req, res) => {
   try {
     const userId = req.user.id;
-    const today = new Date().toISOString().split("T")[0];
+    const today = getLocalDateString();
     
-    const attendance = await Attendance.findOne({ user: userId, date: today });
+    let attendance = await Attendance.findOne({ user: userId, date: today });
+    
+    if (!attendance) {
+      // Look for any open log from previous days (edge case)
+      attendance = await Attendance.findOne({ 
+        user: userId, 
+        "logs.checkOut": { $exists: false } 
+      }).sort({ date: -1 });
+    }
+
     if (!attendance) return res.status(404).json({
       success: false,
       status: 404,
-      message: "No attendance record for today"
+      message: "No attendance record found to check out"
     });
     
     const lastLog = attendance.logs[attendance.logs.length - 1];
@@ -168,7 +202,7 @@ const getMyStatus = async (req, res) => {
   try {
     const userId = req.user.id;
     // Find the most recent record with an open log OR today's record
-    const today = new Date().toISOString().split("T")[0];
+    const today = getLocalDateString();
     let attendance = await Attendance.findOne({ user: userId, date: today });
     
     if (!attendance) {

@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema(
       }
     ],
     trackAttendance: { type: Boolean, default: false },
-    lastMonthDue: { type: Number, default: 0 },
+
     joinDate: { type: String },
     assignedProjects: [{ type: mongoose.Schema.Types.ObjectId, ref: "Project" }],
     isActive: { type: Boolean, default: true },
